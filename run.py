@@ -9,10 +9,14 @@ import os
 import webbrowser
 import uvicorn
 
+# Ensure UTF-8 output encoding on Windows
+if sys.platform.startswith("win"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 def main():
     print("=" * 65)
-    print("🛰️  SAR SENTINEL - NASA-ISRO RADAR EARTH OBSERVATION PLATFORM")
-    print("   NASA Space Apps Challenge 2026 | Team: SAR Sentinel")
+    print("SAR SENTINEL - NASA-ISRO RADAR EARTH OBSERVATION PLATFORM")
+    print("NASA Space Apps Challenge 2026 | Team: SAR Sentinel")
     print("=" * 65)
     print("\n[+] Initializing FastAPI Server & NASA ASF DAAC Client...")
     print("[+] Launching Mission Control UI at http://127.0.0.1:8000\n")

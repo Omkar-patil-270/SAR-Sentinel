@@ -3,229 +3,313 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SAR Sentinel | NASA-ISRO Radar Earth Observation Platform</title>
+  <title>SAR SENTINEL // NASA-ISRO TACTICAL RADAR COMMAND HUB</title>
   
-  <!-- Google Fonts & Icons -->
+  <!-- Sci-Fi & Mission Control Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,700&family=Orbitron:wght@500;700;800;900&family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
   
   <!-- Leaflet CSS for Map -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   
-  <!-- Chart.js -->
+  <!-- Chart.js for High-Tech Spectral Histograms -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
-  <!-- Custom Styles -->
+  <!-- Custom Sci-Fi Space System Styles -->
   <link rel="stylesheet" href="/static/styles.css">
 </head>
-<body class="nasa-theme">
+<body class="space-system-body">
 
-  <!-- TOP HUD BAR -->
-  <header class="hud-header">
-    <div class="hud-left">
-      <div class="radar-logo-pulse">
-        <div class="radar-sweep"></div>
+  <!-- BACKGROUND SCANLINE & GRID OVERLAYS -->
+  <div class="screen-scanlines"></div>
+  <div class="space-grid-bg"></div>
+
+  <!-- TOP COMMAND DECK (HUD HEADER) -->
+  <header class="command-deck-header tech-frame">
+    <div class="deck-corner-bracket top-left"></div>
+    <div class="deck-corner-bracket top-right"></div>
+    
+    <!-- BRAND & MISSION IDENTIFIER -->
+    <div class="header-brand-block">
+      <div class="hologram-radar-icon">
+        <div class="ping-circle"></div>
+        <div class="radar-ray"></div>
+        <div class="center-crosshair"></div>
       </div>
-      <div>
-        <h1 class="brand-title">SAR SENTINEL</h1>
-        <p class="brand-subtitle">NASA-ISRO NISAR & SENTINEL-1 RADAR OBSERVATION PLATFORM</p>
+      <div class="brand-text">
+        <div class="system-codename">
+          <span class="prefix">NISAR //</span> SAR SENTINEL
+          <span class="version-tag">v2.6.4</span>
+        </div>
+        <div class="system-sub">NASA-ISRO TACTICAL EARTH RADAR COMMAND HUB • NASA SPACE APPS 2026</div>
       </div>
     </div>
 
-    <!-- NISAR ORBITAL TELEMETRY TICKER -->
-    <div class="telemetry-hud" id="telemetryHud">
-      <div class="tel-item"><span class="tel-label">MISSION:</span> <span class="tel-val highlight">NISAR (L+S BAND)</span></div>
-      <div class="tel-item"><span class="tel-label">ALTITUDE:</span> <span class="tel-val">747.0 KM</span></div>
-      <div class="tel-item"><span class="tel-label">SWATH:</span> <span class="tel-val">242 KM</span></div>
-      <div class="tel-item"><span class="tel-label">REPEAT:</span> <span class="tel-val">12 DAYS</span></div>
-      <div class="tel-item"><span class="tel-label">VELOCITY:</span> <span class="tel-val">7.48 KM/S</span></div>
-      <div class="tel-item"><span class="tel-label">STATUS:</span> <span class="tel-badge online">● LIVE ORBIT</span></div>
+    <!-- LIVE MISSION METRICS TICKER -->
+    <div class="mission-telemetry-strip">
+      <div class="tel-pill">
+        <span class="lbl">UTC MISSION TIME</span>
+        <span class="val highlight" id="missionClock">2026.10.19 16:15:32.408</span>
+      </div>
+      <div class="tel-pill">
+        <span class="lbl">PLATFORM</span>
+        <span class="val">NISAR-1 (L+S BAND)</span>
+      </div>
+      <div class="tel-pill">
+        <span class="lbl">ORBIT ALTITUDE</span>
+        <span class="val">747.0 KM <small>LEO</small></span>
+      </div>
+      <div class="tel-pill">
+        <span class="lbl">SWATH WIDTH</span>
+        <span class="val">242 KM</span>
+      </div>
+      <div class="tel-pill">
+        <span class="lbl">RADAR RF POWER</span>
+        <span class="val success">4.5 kW [NOMINAL]</span>
+      </div>
     </div>
 
-    <div class="hud-right">
-      <span class="badge team-badge">TEAM: SAR SENTINEL</span>
-      <span class="badge event-badge">NASA SPACE APPS 2026</span>
+    <!-- COMMANDER BADGE & AUDIO TOGGLE -->
+    <div class="header-status-block">
+      <button id="audioToggleBtn" class="audio-btn" title="Toggle Tactical Audio Effects">
+        <span class="audio-icon">🔊</span> AUDIO: <span id="audioStatusText">ON</span>
+      </button>
+      <div class="commander-tag">
+        <span class="role">SOLO COMMANDER</span>
+        <span class="name">OMKAR RAMESH PATIL</span>
+      </div>
     </div>
   </header>
 
-  <!-- MAIN APP CONTAINER -->
-  <main class="mission-dashboard">
+  <!-- MAIN TACTICAL WORKSPACE -->
+  <main class="tactical-workspace">
 
-    <!-- LEFT PANEL: CONTROLS & NASA SEARCH -->
-    <aside class="control-sidebar panel">
+    <!-- LEFT COLUMN: TARGET SELECTION & NASA ARCHIVE SEARCH -->
+    <aside class="tactical-col left-col">
       
-      <!-- SCENARIO PICKER -->
-      <div class="sidebar-section">
-        <div class="section-header">
-          <span class="icon">🛰️</span>
-          <h3>BENCHMARK OBSERVATIONS</h3>
+      <!-- TARGET REGION SELECTOR -->
+      <div class="tech-panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="neon-bullet">■</span> TACTICAL TARGET ACQUISITION</div>
+          <span class="chip chip-blue">4 BENCHMARKS</span>
         </div>
-        <p class="hint-text">Select curated real-world NASA radar events:</p>
-        <div class="scenario-grid" id="scenarioList">
-          <!-- Dynamically populated from /api/scenarios -->
+        <div class="panel-body">
+          <div class="scenario-stream" id="scenarioList">
+            <!-- Rendered dynamically -->
+          </div>
         </div>
       </div>
 
-      <!-- RADAR PROCESSING CONTROLS -->
-      <div class="sidebar-section">
-        <div class="section-header">
-          <span class="icon">⚙️</span>
-          <h3>RADAR DETECTION PARAMETERS</h3>
+      <!-- RADAR PROCESSING PARAMETERS -->
+      <div class="tech-panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="neon-bullet">■</span> SAR ALGORITHM PARAMETERS</div>
+          <span class="chip chip-green">ACTIVE</span>
         </div>
-        
-        <div class="control-group">
-          <label>Analysis Detection Type:</label>
-          <select id="analysisTypeSelect" class="cyber-select">
-            <option value="flood">Surface Water & Flood Inundation (Specular Drop)</option>
-            <option value="coastal">Coastal Erosion & Mangrove Intrusion (Polarimetric)</option>
-            <option value="landslide">Terrain Shift & Glacial Movement (DInSAR)</option>
-          </select>
-        </div>
+        <div class="panel-body">
+          <div class="param-row">
+            <label class="param-label">DETECTION ALGORITHM:</label>
+            <select id="analysisTypeSelect" class="tech-select">
+              <option value="flood">Surface Water & Flood (Specular Reflection Drop)</option>
+              <option value="coastal">Coastal Erosion & Mangrove (Polarimetric Volume)</option>
+              <option value="landslide">Cryosphere / Terrain Shift (DInSAR Coherence)</option>
+            </select>
+          </div>
 
-        <div class="control-group">
-          <label>Sensitivity Factor: <span id="sensitivityVal" class="slider-val">1.0x</span></label>
-          <input type="range" id="sensitivitySlider" min="0.5" max="2.0" step="0.1" value="1.0" class="cyber-slider">
-        </div>
+          <div class="param-row">
+            <div class="param-label-flex">
+              <label>SENSITIVITY COEFFICIENT:</label>
+              <span class="param-val-readout" id="sensitivityVal">1.0x</span>
+            </div>
+            <input type="range" id="sensitivitySlider" min="0.5" max="2.0" step="0.1" value="1.0" class="tech-range">
+            <div class="range-ticks">
+              <span>0.5x</span>
+              <span>1.0x</span>
+              <span>1.5x</span>
+              <span>2.0x</span>
+            </div>
+          </div>
 
-        <button id="runAnalysisBtn" class="cyber-btn primary-btn">
-          <span class="btn-glow"></span>
-          ⚡ RUN SAR CHANGE DETECTION
-        </button>
+          <button id="runAnalysisBtn" class="cyber-action-btn primary-glow">
+            <div class="btn-scanline"></div>
+            <span class="btn-content">⚡ ENGAGE SAR CHANGE DETECTION</span>
+          </button>
+        </div>
       </div>
 
       <!-- LIVE NASA ASF DAAC QUERY -->
-      <div class="sidebar-section">
-        <div class="section-header">
-          <span class="icon">📡</span>
-          <h3>QUERY NASA ASF DAAC ARCHIVE</h3>
+      <div class="tech-panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="neon-bullet">■</span> NASA ASF DAAC LIVE ARCHIVE</div>
+          <span class="chip chip-cyan">DIRECT API</span>
         </div>
-        <p class="hint-text">Discover real radar granules from NASA's Alaska Satellite Facility:</p>
-        
-        <div class="grid-2">
-          <div class="control-group">
-            <label>Platform:</label>
-            <select id="platformSelect" class="cyber-select">
-              <option value="SENTINEL-1">Sentinel-1 (SAR)</option>
-              <option value="NISAR">NISAR (L-Band)</option>
-              <option value="UAVSAR">UAVSAR (Airborne)</option>
-            </select>
+        <div class="panel-body">
+          <p class="panel-intro">Query real radar observation granules directly from NASA Alaska Satellite Facility:</p>
+          
+          <div class="form-grid-2">
+            <div class="param-row">
+              <label class="param-label">MISSION SENSOR:</label>
+              <select id="platformSelect" class="tech-select">
+                <option value="SENTINEL-1">Sentinel-1 (SAR C-Band)</option>
+                <option value="NISAR">NISAR (SAR L-Band)</option>
+                <option value="UAVSAR">UAVSAR (Airborne SAR)</option>
+              </select>
+            </div>
+            <div class="param-row">
+              <label class="param-label">GRANULE COUNT:</label>
+              <select id="maxGranulesSelect" class="tech-select">
+                <option value="4">4 Granules</option>
+                <option value="8" selected>8 Granules</option>
+                <option value="12">12 Granules</option>
+              </select>
+            </div>
           </div>
-          <div class="control-group">
-            <label>Max Granules:</label>
-            <select id="maxGranulesSelect" class="cyber-select">
-              <option value="4">4 Granules</option>
-              <option value="8" selected>8 Granules</option>
-              <option value="12">12 Granules</option>
-            </select>
-          </div>
-        </div>
 
-        <button id="queryNasaBtn" class="cyber-btn secondary-btn">
-          🔍 SEARCH NASA RADAR ARCHIVE
-        </button>
+          <button id="queryNasaBtn" class="cyber-action-btn secondary-cyan">
+            <span>📡 DISCOVER REAL NASA OBSERVATIONS</span>
+          </button>
+        </div>
       </div>
 
     </aside>
 
-    <!-- CENTER MAP AREA -->
-    <section class="map-container panel">
-      
-      <!-- MAP OVERLAY CONTROLS -->
-      <div class="map-floating-bar">
-        <div class="map-mode-indicator">
-          <span class="radar-dot"></span>
-          <span id="activeScenarioLabel">Brahmaputra River Basin Inundation</span>
+    <!-- CENTER COLUMN: RADAR MAP & VIEWPORT HUD -->
+    <section class="tactical-col center-col">
+      <div class="map-viewport tech-frame">
+        <div class="deck-corner-bracket top-left"></div>
+        <div class="deck-corner-bracket top-right"></div>
+        <div class="deck-corner-bracket bottom-left"></div>
+        <div class="deck-corner-bracket bottom-right"></div>
+
+        <!-- TOP FLOATING HUD BAR -->
+        <div class="viewport-hud-top">
+          <div class="active-target-display">
+            <div class="target-radar-ping"></div>
+            <div>
+              <div class="target-title-hud" id="activeScenarioLabel">Brahmaputra River Basin Inundation</div>
+              <div class="target-sub-hud" id="activeMissionLabel">MISSION: NISAR L-BAND / SENTINEL-1 DUAL-POLARIZED</div>
+            </div>
+          </div>
+
+          <!-- TIME-SLIDER (BASELINE VS EVENT) -->
+          <div class="dual-time-scrubber">
+            <span class="scrub-label">T-0 PRE-EVENT BASELINE</span>
+            <input type="range" id="radarOpacitySlider" min="0" max="100" value="70" class="neon-scrubber">
+            <span class="scrub-label highlight">T-1 RADAR ANOMALY</span>
+          </div>
+
+          <div class="hud-toggles">
+            <label class="hud-checkbox-label">
+              <input type="checkbox" id="toggleHotspots" checked>
+              <span class="custom-check"></span>
+              <span>ANOMALY HOTSPOTS</span>
+            </label>
+          </div>
         </div>
 
-        <!-- RADAR SLIDER -->
-        <div class="radar-slider-container">
-          <span class="slider-label">BASELINE (DRY)</span>
-          <input type="range" id="radarOpacitySlider" min="0" max="100" value="70" class="radar-time-slider">
-          <span class="slider-label">EVENT (RADAR CHANGE)</span>
+        <!-- LEAFLET RADAR MAP -->
+        <div id="sarMap"></div>
+
+        <!-- CENTER CROSSHAIR RETICLE (SCI-FI OVERLAY) -->
+        <div class="map-reticle-overlay">
+          <div class="reticle-circle"></div>
+          <div class="reticle-line horiz"></div>
+          <div class="reticle-line vert"></div>
         </div>
 
-        <div class="map-toggles">
-          <label class="cyber-checkbox">
-            <input type="checkbox" id="toggleHotspots" checked>
-            <span>Anomaly Hotspots</span>
-          </label>
+        <!-- BOTTOM FLOATING HUD BAR -->
+        <div class="viewport-hud-bottom">
+          <div class="hud-coords">
+            <span class="hud-icon">🧭</span>
+            <span id="coordsDisplay">LAT: 26.3500° N | LON: 92.6800° E | ELEV: 114M</span>
+          </div>
+          <div class="hud-sensors">
+            <span class="tag-box">POLARIZATION: VV + VH</span>
+            <span class="tag-box">AZIMUTH: 194.2° DESCENDING</span>
+            <span class="tag-box highlight">RADAR RESOLUTION: 3m x 10m</span>
+          </div>
         </div>
-      </div>
 
-      <!-- LEAFLET MAP ELEMENT -->
-      <div id="sarMap"></div>
-
-      <!-- MAP FOOTER HUD -->
-      <div class="map-hud-footer">
-        <span id="coordsDisplay">LAT: 26.3500° N | LON: 92.6800° E</span>
-        <span class="data-tag">BAND: L-BAND (24cm) & C-BAND | POL: VV+VH DUAL-POLARIZED</span>
       </div>
     </section>
 
-    <!-- RIGHT PANEL: METRICS & LIVE DATA -->
-    <aside class="metrics-sidebar panel">
+    <!-- RIGHT COLUMN: METRICS, SPECTROGRAM & NASA GRANULES -->
+    <aside class="tactical-col right-col">
 
-      <!-- KEY IMPACT METRICS -->
-      <div class="sidebar-section">
-        <div class="section-header">
-          <span class="icon">📊</span>
-          <h3>SAR CHANGE DETECTION METRICS</h3>
+      <!-- KEY RADAR IMPACT METRICS -->
+      <div class="tech-panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="neon-bullet">■</span> QUANTITATIVE RADAR METRICS</div>
+          <span class="chip chip-red" id="kpiSeverityChip">HIGH SEVERITY</span>
         </div>
+        <div class="panel-body">
+          <div class="kpi-cockpit-grid">
+            
+            <div class="cockpit-card danger-glow">
+              <div class="card-corner"></div>
+              <div class="card-metric-label">BACKSCATTER DIFFERENTIAL</div>
+              <div class="card-metric-val" id="kpiBackscatter">-6.8 <span class="unit">dB</span></div>
+              <div class="card-metric-sub">Specular Water Reflection</div>
+            </div>
 
-        <div class="metrics-kpi-grid">
-          <div class="kpi-card danger">
-            <div class="kpi-label">BACKSCATTER DROP</div>
-            <div class="kpi-value" id="kpiBackscatter">-6.8 <span class="unit">dB</span></div>
-            <div class="kpi-sub">Specular Water Reflection</div>
-          </div>
+            <div class="cockpit-card warning-glow">
+              <div class="card-corner"></div>
+              <div class="card-metric-label">INUNDATED / ALTERED SURFACE</div>
+              <div class="card-metric-val" id="kpiArea">1,420.5 <span class="unit">KM²</span></div>
+              <div class="card-metric-sub" id="kpiSeverity">CRITICAL ANOMALY</div>
+            </div>
 
-          <div class="kpi-card warning">
-            <div class="kpi-label">AFFECTED SURFACE</div>
-            <div class="kpi-value" id="kpiArea">1,420.5 <span class="unit">km²</span></div>
-            <div class="kpi-sub" id="kpiSeverity">Severity: HIGH</div>
-          </div>
+            <div class="cockpit-card cyan-glow">
+              <div class="card-corner"></div>
+              <div class="card-metric-label">COHERENCE CORRELATION</div>
+              <div class="card-metric-val" id="kpiCoherence">0.42 <span class="unit">γ</span></div>
+              <div class="card-metric-sub">Phase Decorrelation Active</div>
+            </div>
 
-          <div class="kpi-card cyan">
-            <div class="kpi-label">COHERENCE STABILITY</div>
-            <div class="kpi-value" id="kpiCoherence">0.42 <span class="unit">γ</span></div>
-            <div class="kpi-sub">Decorrelation detected</div>
-          </div>
+            <div class="cockpit-card green-glow">
+              <div class="card-corner"></div>
+              <div class="card-metric-label">CONFIDENCE INDEX</div>
+              <div class="card-metric-val" id="kpiConfidence">98.4 <span class="unit">%</span></div>
+              <div class="card-metric-sub">NASA-ISRO Verified</div>
+            </div>
 
-          <div class="kpi-card success">
-            <div class="kpi-label">RADAR CONFIDENCE</div>
-            <div class="kpi-value" id="kpiConfidence">96.4 <span class="unit">%</span></div>
-            <div class="kpi-sub">NASA-ISRO Validated</div>
           </div>
         </div>
       </div>
 
-      <!-- HISTOGRAM CHART -->
-      <div class="sidebar-section">
-        <div class="section-header">
-          <span class="icon">📈</span>
-          <h3>BACKSCATTER INTENSITY DISTRIBUTION</h3>
+      <!-- SPECTROGRAM BACKSCATTER HISTOGRAM -->
+      <div class="tech-panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="neon-bullet">■</span> RADAR BACKSCATTER SPECTROGRAM</div>
+          <span class="chip chip-blue">σ⁰ INTENSITY</span>
         </div>
-        <div class="chart-wrapper">
-          <canvas id="backscatterChart"></canvas>
-        </div>
-      </div>
-
-      <!-- REAL NASA GRANULES LIST -->
-      <div class="sidebar-section live-granules-box">
-        <div class="section-header">
-          <span class="icon">📁</span>
-          <h3>NASA OBSERVATION GRANULES</h3>
-        </div>
-        <div id="granulesContainer" class="granules-list">
-          <div class="loading-state">Loading NASA ASF observations...</div>
+        <div class="panel-body">
+          <div class="chart-box">
+            <canvas id="backscatterChart"></canvas>
+          </div>
         </div>
       </div>
 
-      <!-- EXPORT REPORT -->
-      <div class="export-box">
-        <button id="exportReportBtn" class="cyber-btn success-btn">
-          📄 GENERATE NASA MISSION REPORT
+      <!-- REAL NASA ASF GRANULES STREAM -->
+      <div class="tech-panel flex-grow-panel">
+        <div class="panel-header">
+          <div class="panel-title"><span class="neon-bullet">■</span> REAL OBSERVATION GRANULES</div>
+          <span class="chip chip-green" id="granuleCounter">8 GRANULES</span>
+        </div>
+        <div class="panel-body scrollable-body">
+          <div id="granulesContainer" class="granules-terminal">
+            <div class="stream-loading">
+              <span class="spinner"></span> CONNECTING TO NASA ASF DAAC ARCHIVE...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TACTICAL MISSION REPORT BUTTON -->
+      <div class="action-footer">
+        <button id="exportReportBtn" class="cyber-action-btn mission-report-btn">
+          <span>📑 GENERATE OFFICIAL NASA MISSION REPORT</span>
         </button>
       </div>
 
@@ -233,25 +317,40 @@
 
   </main>
 
-  <!-- MODAL: MISSION REPORT -->
-  <div id="reportModal" class="modal-overlay hidden">
-    <div class="modal-content glass-card">
-      <div class="modal-header">
-        <h2>📑 NASA-ISRO SAR SENTINEL - MISSION REPORT</h2>
-        <button id="closeReportBtn" class="close-btn">&times;</button>
+  <!-- MODAL: MISSION REPORT (TACTICAL BRIEFING) -->
+  <div id="reportModal" class="modal-backdrop hidden">
+    <div class="modal-sci-fi-window tech-frame">
+      <div class="deck-corner-bracket top-left"></div>
+      <div class="deck-corner-bracket top-right"></div>
+      <div class="deck-corner-bracket bottom-left"></div>
+      <div class="deck-corner-bracket bottom-right"></div>
+
+      <div class="modal-top">
+        <div class="modal-heading">
+          <span class="modal-icon">🛰️</span>
+          <div>
+            <h3>OFFICIAL NASA SPACE APPS 2026 MISSION REPORT</h3>
+            <div class="modal-sub">TEAM: SAR SENTINEL • CHALLENGE: DANCING WITH THE SARS</div>
+          </div>
+        </div>
+        <button id="closeReportBtn" class="modal-close">&times;</button>
       </div>
-      <div class="modal-body" id="reportBody">
+
+      <div class="modal-main-content" id="reportBody">
         <!-- Rendered dynamically -->
       </div>
-      <div class="modal-footer">
-        <button onclick="window.print()" class="cyber-btn primary-btn">🖨️ PRINT / SAVE AS PDF</button>
+
+      <div class="modal-bottom">
+        <button onclick="window.print()" class="cyber-action-btn primary-glow">
+          🖨️ PRINT / EXPORT AS PDF
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Leaflet JS -->
+  <!-- Leaflet Map JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- App JS -->
+  <!-- Application JS -->
   <script src="/static/app.js"></script>
 </body>
 </html>
