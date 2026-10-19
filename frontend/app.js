@@ -882,21 +882,40 @@ function toggleTemporalPlay() {
 
 // 16. Event Handlers
 function setupEventListeners() {
-  // Drawer Toggles
+  // Drawer Toggles & Restore Tabs
   const leftDrawer = document.getElementById('leftDrawer');
   const rightDrawer = document.getElementById('rightDrawer');
   const toggleLeftBtn = document.getElementById('toggleLeftBtn');
   const toggleRightBtn = document.getElementById('toggleRightBtn');
+  const restoreLeftTab = document.getElementById('restoreLeftTab');
+  const restoreRightTab = document.getElementById('restoreRightTab');
+  const refreshAnalyticsBtn = document.getElementById('refreshAnalyticsBtn');
 
-  toggleLeftBtn.addEventListener('click', () => {
-    leftDrawer.classList.toggle('collapsed');
-    toggleLeftBtn.textContent = leftDrawer.classList.contains('collapsed') ? '▶' : '◀';
-  });
+  function toggleLeft(collapse) {
+    const isCollapsed = collapse !== undefined ? collapse : !leftDrawer.classList.contains('collapsed');
+    leftDrawer.classList.toggle('collapsed', isCollapsed);
+    if (restoreLeftTab) restoreLeftTab.classList.toggle('hidden', !isCollapsed);
+  }
 
-  toggleRightBtn.addEventListener('click', () => {
-    rightDrawer.classList.toggle('collapsed');
-    toggleRightBtn.textContent = rightDrawer.classList.contains('collapsed') ? '◀' : '▶';
-  });
+  function toggleRight(collapse) {
+    const isCollapsed = collapse !== undefined ? collapse : !rightDrawer.classList.contains('collapsed');
+    rightDrawer.classList.toggle('collapsed', isCollapsed);
+    if (restoreRightTab) restoreRightTab.classList.toggle('hidden', !isCollapsed);
+  }
+
+  if (toggleLeftBtn) toggleLeftBtn.addEventListener('click', () => toggleLeft(true));
+  if (restoreLeftTab) restoreLeftTab.addEventListener('click', () => toggleLeft(false));
+
+  if (toggleRightBtn) toggleRightBtn.addEventListener('click', () => toggleRight(true));
+  if (restoreRightTab) restoreRightTab.addEventListener('click', () => toggleRight(false));
+
+  if (refreshAnalyticsBtn) {
+    refreshAnalyticsBtn.addEventListener('click', () => {
+      const lat = currentScenario ? currentScenario.lat : 26.35;
+      const lon = currentScenario ? currentScenario.lon : 92.68;
+      runAnalysis(lat, lon);
+    });
+  }
 
   // Temporal Scrubber
   const temporalSlider = document.getElementById('temporalSlider');

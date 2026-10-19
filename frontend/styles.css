@@ -363,6 +363,34 @@ body.geo-body {
   color: #fff;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-refresh-btn {
+  background: rgba(0, 212, 255, 0.12);
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-refresh-btn:hover {
+  background: var(--cyan);
+  color: #030816;
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
 .drawer-toggle-btn {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--border-subtle);
@@ -374,14 +402,63 @@ body.geo-body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 10px;
+  font-size: 11px;
   transition: all 0.2s ease;
 }
 
 .drawer-toggle-btn:hover {
+  background: rgba(244, 63, 94, 0.2);
+  color: var(--rose);
+  border-color: var(--rose);
+}
+
+/* FLOATING EDGE RESTORE TABS (ALWAYS ACCESSIBLE WHEN PANELS ARE MINIMIZED) */
+.geo-edge-restore-tab {
+  pointer-events: auto;
+  position: absolute;
+  top: 92px;
+  background: var(--bg-panel);
+  backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--border-neon);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 14px rgba(0, 212, 255, 0.35);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 1002;
+  white-space: nowrap;
+}
+
+.geo-edge-restore-tab.left-restore {
+  left: 0;
+  border-top-right-radius: 999px;
+  border-bottom-right-radius: 999px;
+  border-left: none;
+}
+
+.geo-edge-restore-tab.right-restore {
+  right: 0;
+  border-top-left-radius: 999px;
+  border-bottom-left-radius: 999px;
+  border-right: none;
+}
+
+.geo-edge-restore-tab:hover {
   background: rgba(0, 212, 255, 0.2);
   color: #fff;
-  border-color: var(--cyan);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 212, 255, 0.6);
+  transform: scale(1.05);
+}
+
+.geo-edge-restore-tab.hidden {
+  display: none !important;
 }
 
 .card-content-scroll {

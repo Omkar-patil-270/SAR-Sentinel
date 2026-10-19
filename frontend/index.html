@@ -68,6 +68,15 @@
       </div>
     </header>
 
+    <!-- FLOATING RESTORE EDGE TABS (ALWAYS ACCESSIBLE WHEN PANELS ARE MINIMIZED) -->
+    <button class="geo-edge-restore-tab left-restore hidden" id="restoreLeftTab" title="Restore Radar Parameters">
+      <span>📡 RADAR PARAMETERS ▶</span>
+    </button>
+
+    <button class="geo-edge-restore-tab right-restore hidden" id="restoreRightTab" title="Restore Radar Analytics">
+      <span>◀ 📊 RADAR ANALYTICS</span>
+    </button>
+
     <!-- FLOATING LEFT DRAWER: RADAR CONFIGURATION & NASA SEARCH -->
     <aside class="geo-floating-card left-card" id="leftDrawer">
       <div class="card-header">
@@ -75,7 +84,7 @@
           <span class="header-dot"></span>
           <h3>RADAR PARAMETERS</h3>
         </div>
-        <button class="drawer-toggle-btn" id="toggleLeftBtn" title="Toggle Panel">◀</button>
+        <button class="drawer-toggle-btn" id="toggleLeftBtn" title="Minimize Panel">✕</button>
       </div>
 
       <div class="card-content-scroll">
@@ -154,7 +163,10 @@
           <span class="header-dot green"></span>
           <h3>RADAR ANALYTICS</h3>
         </div>
-        <button class="drawer-toggle-btn" id="toggleRightBtn" title="Toggle Panel">▶</button>
+        <div class="header-actions">
+          <button class="header-refresh-btn" id="refreshAnalyticsBtn" title="Re-calculate Radar Analysis">⚡ Re-calculate</button>
+          <button class="drawer-toggle-btn" id="toggleRightBtn" title="Minimize Panel">✕</button>
+        </div>
       </div>
 
       <div class="card-content-scroll">
