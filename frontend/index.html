@@ -231,24 +231,25 @@
       </div>
     </aside>
 
-    <!-- FLOATING TEMPORAL SAR TIMELINE SCRUBBER -->
-    <div class="geo-temporal-dock">
-      <button id="temporalPlayBtn" class="time-play-btn" title="Auto-Play Temporal SAR Sequence">▶</button>
-      <div class="time-col">
-        <div class="time-top-row">
-          <span class="time-title">TEMPORAL SAR TIME-SCRUBBER</span>
-          <span class="time-badge" id="temporalPhaseBadge">T-0 EVENT PEAK</span>
-        </div>
-        <div class="time-slider-row">
-          <span class="time-day-label" id="temporalDayLabel">DAY 0</span>
-          <input type="range" id="temporalSlider" min="-15" max="15" step="1" value="0" class="time-slider">
-          <span class="time-range-hint">-15d to +15d</span>
+    <!-- FLOATING BOTTOM DOCK CONTAINER -->
+    <footer class="geo-bottom-dock">
+      <!-- 1. TEMPORAL SAR TIMELINE SCRUBBER -->
+      <div class="geo-temporal-dock">
+        <button id="temporalPlayBtn" class="time-play-btn" title="Auto-Play Temporal SAR Sequence">▶</button>
+        <div class="time-col">
+          <div class="time-top-row">
+            <span class="time-title">TEMPORAL SAR TIME-SCRUBBER</span>
+            <span class="time-badge" id="temporalPhaseBadge">T-0 EVENT PEAK</span>
+          </div>
+          <div class="time-slider-row">
+            <span class="time-day-label" id="temporalDayLabel">DAY 0</span>
+            <input type="range" id="temporalSlider" min="-15" max="15" step="1" value="0" class="time-slider">
+            <span class="time-range-hint">-15d to +15d</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- FLOATING BOTTOM DOCK -->
-    <footer class="geo-bottom-dock">
+      <!-- 2. MAIN ACTIONS DOCK PILL -->
       <div class="dock-pill">
         <button id="autoRotateBtn" class="dock-item active">
           <span class="dock-icon">🌍</span> 3D Auto-Orbit: <b id="autoRotateText">ON</b>

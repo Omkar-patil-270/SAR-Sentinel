@@ -915,11 +915,9 @@ body.geo-body {
   color: #030816;
 }
 
-/* 6. TEMPORAL SAR TIMELINE SCRUBBER */
+/* 6. TEMPORAL SAR TIMELINE SCRUBBER (DOCKED AT BOTTOM CENTER) */
 .geo-temporal-dock {
   pointer-events: auto;
-  align-self: center;
-  margin-bottom: 12px;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -927,7 +925,7 @@ body.geo-body {
   backdrop-filter: var(--blur-glass);
   border: 1px solid var(--border-neon);
   border-radius: 999px;
-  padding: 6px 18px;
+  padding: 5px 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 16px rgba(0, 212, 255, 0.2);
   transition: all 0.25s ease;
 }
@@ -938,13 +936,13 @@ body.geo-body {
 }
 
 .time-play-btn {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--cyan), #0066ff);
   border: none;
   color: #030816;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   cursor: pointer;
   display: flex;
@@ -963,8 +961,8 @@ body.geo-body {
 .time-col {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  min-width: 290px;
+  gap: 2px;
+  min-width: 280px;
 }
 
 .time-top-row {
@@ -975,7 +973,7 @@ body.geo-body {
 
 .time-title {
   font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 8px;
   font-weight: 700;
   color: var(--text-dim);
   letter-spacing: 0.8px;
@@ -983,7 +981,7 @@ body.geo-body {
 
 .time-badge {
   font-family: var(--font-mono);
-  font-size: 8.5px;
+  font-size: 8px;
   font-weight: 700;
   color: var(--cyan);
   background: rgba(0, 212, 255, 0.12);
@@ -1000,7 +998,7 @@ body.geo-body {
 
 .time-day-label {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   color: #fff;
   min-width: 48px;
@@ -1020,11 +1018,14 @@ body.geo-body {
   white-space: nowrap;
 }
 
-/* 7. FLOATING BOTTOM DOCK */
+/* 7. FLOATING BOTTOM DOCK (STACKED TOGETHER AT BOTTOM CENTER) */
 .geo-bottom-dock {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   width: 100%;
+  pointer-events: none;
 }
 
 .dock-pill {
