@@ -18,6 +18,8 @@ let echartInstance = null;
 let autoRotate = true;
 let beamActive = true;
 let heatmapActive = true;
+let currentChartMode = 'spectral';
+let lastAnalysisResult = null;
 
 // 1. Initialize DOM
 document.addEventListener('DOMContentLoaded', () => {
@@ -37,7 +39,7 @@ function startMissionClock() {
     const mm = String(now.getUTCMinutes()).padStart(2, '0');
     const ss = String(now.getUTCSeconds()).padStart(2, '0');
     const ms = String(now.getUTCMilliseconds()).padStart(3, '0');
-    clockEl.textContent = `${hh}:${mm}:${ss}.${ms} UTC`;
+    clockEl.textContent = `${hh}:${mm}:${ss}.${ms}`;
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
@@ -342,20 +344,29 @@ async function runAnalysis(lat, lon) {
 }
 
 // 11. Render Results to KPI Grid & ECharts
+// 11. Render Results to KPI Grid & Multi-Mode ECharts
 function renderAnalysisResults(data) {
+  lastAnalysisResult = data;
+
   document.getElementById('kpiBackscatter').innerHTML = `${data.backscatter_drop_db} <span class="u">dB</span>`;
   document.getElementById('kpiArea').innerHTML = `${data.affected_area_sqkm.toLocaleString()} <span class="u">km²</span>`;
   document.getElementById('kpiSeverity').textContent = `${data.severity} Risk`;
   document.getElementById('kpiCoherence').innerHTML = `${data.coherence_index} <span class="u">γ</span>`;
   document.getElementById('kpiConfidence').innerHTML = `${data.confidence_score} <span class="u">%</span>`;
 
-  // Update ECharts
-  if (echartInstance && data.histogram) {
-    updateECharts(data.histogram);
+  // Update Footer Stats
+  const statMetricEl = document.getElementById('chartStatMetric');
+  if (statMetricEl) statMetricEl.textContent = `${data.backscatter_drop_db} dB`;
+  const statPhaseEl = document.getElementById('chartStatPhase');
+  if (statPhaseEl) {
+    statPhaseEl.textContent = data.severity === 'HIGH' || data.severity === 'SEVERE' ? '28 Days' : (data.severity === 'CRITICAL' ? '42 Days' : '14 Days');
   }
+
+  // Render active ECharts mode
+  renderActiveChart();
 }
 
-// 12. Initialize & Update Apache ECharts
+// 12. Initialize & Update Multi-Mode Apache ECharts
 function initECharts() {
   const dom = document.getElementById('radarEChart');
   echartInstance = echarts.init(dom, null, { renderer: 'canvas' });
@@ -365,57 +376,295 @@ function initECharts() {
   });
 }
 
-function updateECharts(hist) {
-  const option = {
-    backgroundColor: 'transparent',
-    tooltip: { trigger: 'axis', textStyle: { fontFamily: 'JetBrains Mono', fontSize: 11 } },
-    legend: {
-      data: ['T-0 Baseline', 'T-1 Event'],
-      textStyle: { color: '#94a3b8', fontFamily: 'Inter', fontSize: 10 },
-      top: 0
-    },
-    grid: { left: '10%', right: '5%', bottom: '15%', top: '22%' },
-    xAxis: {
-      type: 'category',
-      data: hist.labels,
-      axisLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.1)' } },
-      axisLabel: { color: '#64748b', fontFamily: 'JetBrains Mono', fontSize: 9 }
-    },
-    yAxis: {
-      type: 'value',
-      splitLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.05)' } },
-      axisLabel: { color: '#64748b', fontFamily: 'JetBrains Mono', fontSize: 9 }
-    },
-    series: [
-      {
-        name: 'T-0 Baseline',
-        type: 'line',
-        smooth: true,
-        data: hist.baseline,
-        itemStyle: { color: '#00d4ff' },
-        areaStyle: {
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(0, 212, 255, 0.45)' },
-            { offset: 1, color: 'rgba(0, 212, 255, 0.0)' }
-          ])
+function renderActiveChart() {
+  if (!echartInstance || !lastAnalysisResult) return;
+
+  const data = lastAnalysisResult;
+  echartInstance.clear();
+
+  if (currentChartMode === 'spectral') {
+    // Mode 1: Spectral Backscatter Density with Annotated Detection Threshold
+    const titleEl = document.getElementById('chartMainTitle');
+    if (titleEl) titleEl.textContent = 'SPECTRAL BACKSCATTER (σ⁰)';
+    const subTagEl = document.getElementById('chartSubTag');
+    if (subTagEl) subTagEl.textContent = 'Dual-Pol VV/VH Specular Attenuation';
+
+    const hist = data.histogram || {
+      labels: ["-18dB", "-15dB", "-12dB", "-9dB", "-6dB", "-3dB", "0dB", "+3dB"],
+      baseline: [4, 10, 26, 48, 34, 16, 6, 2],
+      event: [28, 42, 38, 18, 12, 7, 3, 1]
+    };
+
+    const option = {
+      backgroundColor: 'transparent',
+      animationDuration: 650,
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'rgba(10, 16, 30, 0.95)',
+        borderColor: 'rgba(0, 212, 255, 0.4)',
+        borderWidth: 1,
+        textStyle: { color: '#f1f5f9', fontFamily: 'JetBrains Mono', fontSize: 11 },
+        formatter: (params) => {
+          let tip = `<div style="font-weight:700;margin-bottom:4px;color:#00d4ff;">${params[0].axisValue} Bin</div>`;
+          params.forEach(p => {
+            tip += `<div style="display:flex;align-items:center;gap:6px;margin:2px 0;">
+              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color};"></span>
+              <span>${p.seriesName}: <b>${p.value}% pixels</b></span>
+            </div>`;
+          });
+          return tip;
         }
       },
-      {
-        name: 'T-1 Event',
-        type: 'line',
-        smooth: true,
-        data: hist.event,
-        itemStyle: { color: '#f43f5e' },
-        areaStyle: {
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(244, 63, 94, 0.45)' },
-            { offset: 1, color: 'rgba(244, 63, 94, 0.0)' }
-          ])
+      legend: {
+        data: ['T-0 Baseline', 'T-1 Event'],
+        textStyle: { color: '#94a3b8', fontFamily: 'Inter', fontSize: 10 },
+        top: 0
+      },
+      grid: { left: '8%', right: '5%', bottom: '15%', top: '22%' },
+      xAxis: {
+        type: 'category',
+        data: hist.labels,
+        axisLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.15)' } },
+        axisLabel: { color: '#94a3b8', fontFamily: 'JetBrains Mono', fontSize: 9 }
+      },
+      yAxis: {
+        type: 'value',
+        name: '% Pixels',
+        nameTextStyle: { color: '#64748b', fontSize: 8, padding: [0, 0, 0, 8] },
+        splitLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.05)' } },
+        axisLabel: { color: '#64748b', fontFamily: 'JetBrains Mono', fontSize: 9 }
+      },
+      series: [
+        {
+          name: 'T-0 Baseline',
+          type: 'line',
+          smooth: true,
+          data: hist.baseline,
+          itemStyle: { color: '#00d4ff' },
+          lineStyle: { width: 2 },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(0, 212, 255, 0.45)' },
+              { offset: 1, color: 'rgba(0, 212, 255, 0.0)' }
+            ])
+          }
+        },
+        {
+          name: 'T-1 Event',
+          type: 'line',
+          smooth: true,
+          data: hist.event,
+          itemStyle: { color: '#f43f5e' },
+          lineStyle: { width: 2 },
+          markLine: {
+            symbol: 'none',
+            data: [
+              {
+                xAxis: '-6dB',
+                lineStyle: { color: '#f59e0b', type: 'dashed', width: 1.5 },
+                label: {
+                  formatter: 'Water (-6.5 dB)',
+                  position: 'middle',
+                  color: '#f59e0b',
+                  fontSize: 8,
+                  fontFamily: 'JetBrains Mono'
+                }
+              }
+            ]
+          },
+          markPoint: {
+            data: [
+              { type: 'max', name: 'Peak Anomaly', symbolSize: 26, itemStyle: { color: '#f43f5e' } }
+            ]
+          },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(244, 63, 94, 0.45)' },
+              { offset: 1, color: 'rgba(244, 63, 94, 0.0)' }
+            ])
+          }
         }
-      }
-    ]
-  };
-  echartInstance.setOption(option);
+      ]
+    };
+    echartInstance.setOption(option, true);
+
+  } else if (currentChartMode === 'polar') {
+    // Mode 2: Polarimetric Radar Rose (Quad-Pol Decomposition)
+    const titleEl = document.getElementById('chartMainTitle');
+    if (titleEl) titleEl.textContent = 'POLARIMETRIC RADAR ROSE';
+    const subTagEl = document.getElementById('chartSubTag');
+    if (subTagEl) subTagEl.textContent = 'Quad-Pol Decomposition (HH/HV/VV/γ)';
+
+    const polar = data.polarimetric || {
+      indicators: [
+        { name: 'HH (Surface)', max: 100 },
+        { name: 'HV (Volume)', max: 100 },
+        { name: 'VV (Roughness)', max: 100 },
+        { name: 'VH (Cross-Pol)', max: 100 },
+        { name: 'γ (Coherence)', max: 100 },
+        { name: 'H (Entropy)', max: 100 }
+      ],
+      baseline: [82, 74, 80, 68, 86, 28],
+      event: [22, 14, 28, 12, 38, 75]
+    };
+
+    const option = {
+      backgroundColor: 'transparent',
+      animationDuration: 650,
+      tooltip: {
+        trigger: 'item',
+        backgroundColor: 'rgba(10, 16, 30, 0.95)',
+        borderColor: 'rgba(0, 212, 255, 0.4)',
+        borderWidth: 1,
+        textStyle: { color: '#f1f5f9', fontFamily: 'JetBrains Mono', fontSize: 11 }
+      },
+      legend: {
+        data: ['Baseline State', 'Radar Anomaly'],
+        textStyle: { color: '#94a3b8', fontFamily: 'Inter', fontSize: 10 },
+        top: 0
+      },
+      radar: {
+        indicator: polar.indicators,
+        shape: 'polygon',
+        center: ['50%', '56%'],
+        radius: '62%',
+        axisName: {
+          color: '#94a3b8',
+          fontFamily: 'JetBrains Mono',
+          fontSize: 8.5
+        },
+        splitLine: {
+          lineStyle: { color: 'rgba(255, 255, 255, 0.1)' }
+        },
+        splitArea: {
+          show: true,
+          areaStyle: {
+            color: ['rgba(255,255,255,0.01)', 'rgba(0, 212, 255, 0.03)']
+          }
+        },
+        axisLine: {
+          lineStyle: { color: 'rgba(255, 255, 255, 0.12)' }
+        }
+      },
+      series: [
+        {
+          name: 'Polarimetric Scattering',
+          type: 'radar',
+          data: [
+            {
+              value: polar.baseline,
+              name: 'Baseline State',
+              itemStyle: { color: '#00d4ff' },
+              areaStyle: { color: 'rgba(0, 212, 255, 0.25)' },
+              lineStyle: { width: 1.8 }
+            },
+            {
+              value: polar.event,
+              name: 'Radar Anomaly',
+              itemStyle: { color: '#f43f5e' },
+              areaStyle: { color: 'rgba(244, 63, 94, 0.35)' },
+              lineStyle: { width: 2 }
+            }
+          ]
+        }
+      ]
+    };
+    echartInstance.setOption(option, true);
+
+  } else if (currentChartMode === 'forecast') {
+    // Mode 3: 60-Day ML Temporal Trend & Water Drainage Recovery
+    const titleEl = document.getElementById('chartMainTitle');
+    if (titleEl) titleEl.textContent = '60-DAY ML RECESSION FORECAST';
+    const subTagEl = document.getElementById('chartSubTag');
+    if (subTagEl) subTagEl.textContent = 'Inundation Drainage & Surface Recovery';
+
+    const fc = data.forecast || {
+      timeline: ["Day -20", "Day -10", "T-0 Peak", "Day +5", "Day +10", "Day +15", "Day +20", "Day +30"],
+      observed: [-11.1, -11.4, -18.2, null, null, null, null, null],
+      forecast: [null, null, -18.2, -16.4, -14.8, -13.5, -12.1, -11.2],
+      confidence_upper: [null, null, -17.4, -15.5, -13.9, -12.5, -11.0, -10.2],
+      confidence_lower: [null, null, -19.0, -17.3, -15.7, -14.5, -13.2, -12.2]
+    };
+
+    const option = {
+      backgroundColor: 'transparent',
+      animationDuration: 650,
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'rgba(10, 16, 30, 0.95)',
+        borderColor: 'rgba(0, 212, 255, 0.4)',
+        borderWidth: 1,
+        textStyle: { color: '#f1f5f9', fontFamily: 'JetBrains Mono', fontSize: 11 },
+        formatter: (params) => {
+          let tip = `<div style="font-weight:700;margin-bottom:4px;color:#10b981;">${params[0].axisValue}</div>`;
+          params.forEach(p => {
+            if (p.value !== null && p.value !== undefined) {
+              tip += `<div style="display:flex;align-items:center;gap:6px;margin:2px 0;">
+                <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${p.color};"></span>
+                <span>${p.seriesName}: <b>${p.value} dB</b></span>
+              </div>`;
+            }
+          });
+          return tip;
+        }
+      },
+      legend: {
+        data: ['Historic SAR', 'ML Forecast', 'Confidence ±95%'],
+        textStyle: { color: '#94a3b8', fontFamily: 'Inter', fontSize: 10 },
+        top: 0
+      },
+      grid: { left: '10%', right: '5%', bottom: '15%', top: '22%' },
+      xAxis: {
+        type: 'category',
+        data: fc.timeline,
+        axisLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.15)' } },
+        axisLabel: { color: '#94a3b8', fontFamily: 'JetBrains Mono', fontSize: 8.5 }
+      },
+      yAxis: {
+        type: 'value',
+        name: 'σ⁰ (dB)',
+        nameTextStyle: { color: '#64748b', fontSize: 9 },
+        splitLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.05)' } },
+        axisLabel: { color: '#64748b', fontFamily: 'JetBrains Mono', fontSize: 9 }
+      },
+      series: [
+        {
+          name: 'Historic SAR',
+          type: 'line',
+          data: fc.observed,
+          itemStyle: { color: '#00d4ff' },
+          lineStyle: { width: 2.5 },
+          symbolSize: 6
+        },
+        {
+          name: 'ML Forecast',
+          type: 'line',
+          data: fc.forecast,
+          itemStyle: { color: '#10b981' },
+          lineStyle: { width: 2, type: 'dashed' },
+          symbolSize: 6
+        },
+        {
+          name: 'Confidence ±95%',
+          type: 'line',
+          data: fc.confidence_upper,
+          lineStyle: { opacity: 0 },
+          stack: 'confidence-band',
+          symbol: 'none'
+        },
+        {
+          name: 'Confidence ±95%',
+          type: 'line',
+          data: fc.confidence_lower,
+          lineStyle: { opacity: 0 },
+          areaStyle: { color: 'rgba(16, 185, 129, 0.18)' },
+          stack: 'confidence-band',
+          symbol: 'none'
+        }
+      ]
+    };
+    echartInstance.setOption(option, true);
+  }
 }
 
 // 13. Query NASA ASF DAAC Granules
@@ -509,6 +758,17 @@ function setupEventListeners() {
     document.getElementById('heatmapStatusText').textContent = heatmapActive ? 'ON' : 'OFF';
     document.getElementById('heatmapToggleBtn').classList.toggle('active', heatmapActive);
     if (currentScenario) render3DOverlay(currentScenario);
+  });
+
+  // Chart Mode Tab Switching (Spectral, Polar Rose, 60D Forecast)
+  document.querySelectorAll('.chart-tab-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      document.querySelectorAll('.chart-tab-btn').forEach(b => b.classList.remove('active'));
+      const target = e.currentTarget || e.target;
+      target.classList.add('active');
+      currentChartMode = target.getAttribute('data-chart-mode');
+      renderActiveChart();
+    });
   });
 
   // Report Modal

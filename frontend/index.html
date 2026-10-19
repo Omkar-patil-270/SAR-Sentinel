@@ -53,17 +53,17 @@
       <div class="geo-telemetry-pill">
         <div class="tel-col">
           <span class="t-label">MISSION UTC</span>
-          <span class="t-val" id="missionClock">16:50:22.408</span>
+          <span class="t-val" id="missionClock">17:00:00.000</span>
         </div>
         <div class="tel-divider"></div>
         <div class="tel-col">
           <span class="t-label">ORBIT</span>
-          <span class="t-val highlight">747 KM SSO</span>
+          <span class="t-val highlight">747 KM &bull; SSO</span>
         </div>
         <div class="tel-divider"></div>
         <div class="tel-col">
           <span class="t-label">STATION</span>
-          <span class="t-val success">NISAR-01 ACTIVE</span>
+          <span class="t-val success">NISAR-01 &bull; ACTIVE</span>
         </div>
       </div>
     </header>
@@ -185,13 +185,25 @@
           </div>
         </div>
 
-        <!-- ECHARTS BACKSCATTER HISTOGRAM -->
+        <!-- ECHARTS ADVANCED MULTI-MODE RADAR VISUALIZATION -->
         <div class="echart-container-card">
           <div class="chart-header">
-            <span class="chart-title">BACKSCATTER DISTRIBUTION (σ⁰)</span>
-            <span class="chart-tag">POLARIMETRIC</span>
+            <div>
+              <span class="chart-title" id="chartMainTitle">SPECTRAL BACKSCATTER (σ⁰)</span>
+              <div class="chart-sub-tag" id="chartSubTag">Dual-Pol VV/VH Specular Attenuation</div>
+            </div>
+            <div class="chart-tab-group">
+              <button class="chart-tab-btn active" data-chart-mode="spectral" title="Spectral Density Curve">Spectral</button>
+              <button class="chart-tab-btn" data-chart-mode="polar" title="Polarimetric Quad-Pol Rose">Polar Rose</button>
+              <button class="chart-tab-btn" data-chart-mode="forecast" title="60-Day ML Inundation Forecast">60D Forecast</button>
+            </div>
           </div>
           <div id="radarEChart" class="echart-viewport"></div>
+          <div class="chart-footer-stats" id="chartFooterStats">
+            <span class="stat-pill"><i class="dot red"></i> Water Thresh: <b>-6.5 dB</b></span>
+            <span class="stat-pill"><i class="dot cyan"></i> Attenuation: <b id="chartStatMetric">-6.8 dB</b></span>
+            <span class="stat-pill"><i class="dot emerald"></i> Rec. Phase: <b id="chartStatPhase">18 Days</b></span>
+          </div>
         </div>
 
         <!-- REAL NASA GRANULES LIST -->
