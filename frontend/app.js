@@ -21,6 +21,14 @@ let heatmapActive = true;
 let currentChartMode = 'spectral';
 let lastAnalysisResult = null;
 
+let currentTemporalIntensity = 1.0;
+let temporalDay = 0;
+let temporalPlaying = false;
+let temporalInterval = null;
+
+let granuleEntities = [];
+let activeGranuleEntity = null;
+
 // 1. Initialize DOM
 document.addEventListener('DOMContentLoaded', () => {
   startMissionClock();
@@ -288,7 +296,10 @@ function render3DOverlay(sc) {
         coordinates: Cesium.Rectangle.fromDegrees(sc.lon - span, sc.lat - span, sc.lon + span, sc.lat + span),
         material: new Cesium.ImageMaterialProperty({
           image: canvas,
-          transparent: true
+          transparent: true,
+          color: new Cesium.CallbackProperty(() => {
+            return Cesium.Color.WHITE.withAlpha(Math.max(0.04, currentTemporalIntensity * 0.88));
+          }, false)
         }),
         height: 100
       }
@@ -667,7 +678,7 @@ function renderActiveChart() {
   }
 }
 
-// 13. Query NASA ASF DAAC Granules
+// 13. Query NASA ASF DAAC Granules & Render 3D Swath Footprints
 async function queryNasaGranules(lat, lon) {
   const container = document.getElementById('granulesContainer');
   container.innerHTML = '<div class="granule-loading">Querying NASA Alaska Satellite Facility...</div>';
@@ -682,6 +693,8 @@ async function queryNasaGranules(lat, lon) {
     const data = await res.json();
 
     container.innerHTML = '';
+    clearGranuleFootprints();
+
     if (!data.granules || data.granules.length === 0) {
       container.innerHTML = '<div class="granule-loading">No radar granules found in direct footprint.</div>';
       return;
@@ -689,16 +702,32 @@ async function queryNasaGranules(lat, lon) {
 
     document.getElementById('granulesCountBadge').textContent = `${data.granules.length} FOUND`;
 
-    data.granules.forEach(g => {
+    // Render 3D Swath Footprints directly on Cesium globe
+    renderGranuleFootprints(data.granules);
+
+    data.granules.forEach((g, idx) => {
       const row = document.createElement('div');
       row.className = 'granule-row';
       row.innerHTML = `
         <div class="granule-name-text" title="${g.granule_name}">📡 ${g.granule_name}</div>
         <div class="granule-foot-row">
           <span>${g.startTime ? g.startTime.split('T')[0] : '2024'} • ${g.polarization || 'Dual-Pol'}</span>
-          <a href="${g.downloadUrl || '#'}" target="_blank" class="granule-dl-link">Download ↗</a>
+          <div class="granule-actions">
+            <button class="granule-swath-tag" data-idx="${idx}">📍 3D Swath</button>
+            <a href="${g.downloadUrl || '#'}" target="_blank" class="granule-dl-link">Download ↗</a>
+          </div>
         </div>
       `;
+
+      row.querySelector('.granule-swath-tag').addEventListener('click', (e) => {
+        e.stopPropagation();
+        focusGranuleFootprint(idx);
+      });
+
+      row.addEventListener('click', () => {
+        focusGranuleFootprint(idx);
+      });
+
       container.appendChild(row);
     });
   } catch (err) {
@@ -706,7 +735,152 @@ async function queryNasaGranules(lat, lon) {
   }
 }
 
-// 14. Event Handlers
+// 14. Parse WKT Footprints and Draw on 3D Cesium Globe
+function parseWktPolygon(wkt) {
+  if (!wkt || typeof wkt !== 'string' || !wkt.toUpperCase().includes('POLYGON')) return null;
+  const match = wkt.match(/POLYGON\s*\(\((.*?)\)\)/i);
+  if (!match || !match[1]) return null;
+  const pairs = match[1].split(',');
+  const degrees = [];
+  pairs.forEach(p => {
+    const parts = p.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      const lon = parseFloat(parts[0]);
+      const lat = parseFloat(parts[1]);
+      if (!isNaN(lon) && !isNaN(lat)) {
+        degrees.push(lon, lat);
+      }
+    }
+  });
+  return degrees.length >= 6 ? Cesium.Cartesian3.fromDegreesArray(degrees) : null;
+}
+
+function clearGranuleFootprints() {
+  if (viewer) {
+    granuleEntities.forEach(ent => viewer.entities.remove(ent));
+  }
+  granuleEntities = [];
+  activeGranuleEntity = null;
+}
+
+function renderGranuleFootprints(granules) {
+  clearGranuleFootprints();
+  if (!viewer || !granules || !Array.isArray(granules)) return;
+
+  granules.forEach((g, idx) => {
+    if (!g.footprint) return;
+    const positions = parseWktPolygon(g.footprint);
+    if (!positions) return;
+
+    const ent = viewer.entities.add({
+      id: `granule_swath_${idx}`,
+      name: `NASA SAR Swath: ${g.granule_name}`,
+      polygon: {
+        hierarchy: positions,
+        material: Cesium.Color.fromCssColorString('rgba(0, 212, 255, 0.08)'),
+        outline: true,
+        outlineColor: Cesium.Color.fromCssColorString('rgba(0, 212, 255, 0.65)'),
+        outlineWidth: 2,
+        height: 120
+      }
+    });
+
+    ent.granuleData = g;
+    granuleEntities.push(ent);
+  });
+}
+
+function focusGranuleFootprint(idx) {
+  if (!viewer || idx < 0 || idx >= granuleEntities.length) return;
+  const ent = granuleEntities[idx];
+  if (!ent) return;
+
+  // Unhighlight previous
+  if (activeGranuleEntity && activeGranuleEntity.polygon) {
+    activeGranuleEntity.polygon.material = Cesium.Color.fromCssColorString('rgba(0, 212, 255, 0.08)');
+    activeGranuleEntity.polygon.outlineColor = Cesium.Color.fromCssColorString('rgba(0, 212, 255, 0.65)');
+  }
+
+  // Highlight selected in amber/gold
+  activeGranuleEntity = ent;
+  if (ent.polygon) {
+    ent.polygon.material = Cesium.Color.fromCssColorString('rgba(245, 158, 11, 0.28)');
+    ent.polygon.outlineColor = Cesium.Color.fromCssColorString('#f59e0b');
+  }
+
+  viewer.flyTo(ent, {
+    duration: 1.6,
+    offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-55), 260000)
+  });
+}
+
+// 15. Temporal SAR Time-Scrubber Control
+function setTemporalDay(day) {
+  temporalDay = parseInt(day);
+  const slider = document.getElementById('temporalSlider');
+  if (slider && parseInt(slider.value) !== temporalDay) slider.value = temporalDay;
+
+  const labelEl = document.getElementById('temporalDayLabel');
+  const badgeEl = document.getElementById('temporalPhaseBadge');
+
+  if (temporalDay < -2) {
+    if (labelEl) labelEl.textContent = `DAY ${temporalDay}`;
+    if (badgeEl) {
+      badgeEl.textContent = 'PRE-FLOOD BASELINE';
+      badgeEl.style.color = '#3b82f6';
+      badgeEl.style.borderColor = 'rgba(59, 130, 246, 0.4)';
+    }
+    currentTemporalIntensity = Math.max(0.04, (15 + temporalDay) / 13 * 0.5);
+  } else if (temporalDay >= -2 && temporalDay <= 3) {
+    if (labelEl) labelEl.textContent = temporalDay === 0 ? 'DAY 0 (PEAK)' : `DAY ${temporalDay > 0 ? '+' : ''}${temporalDay}`;
+    if (badgeEl) {
+      badgeEl.textContent = 'T-0 EVENT PEAK';
+      badgeEl.style.color = '#f43f5e';
+      badgeEl.style.borderColor = 'rgba(244, 63, 94, 0.4)';
+    }
+    currentTemporalIntensity = 1.0;
+  } else {
+    if (labelEl) labelEl.textContent = `DAY +${temporalDay}`;
+    if (badgeEl) {
+      badgeEl.textContent = 'DRAINAGE RECESSION';
+      badgeEl.style.color = '#10b981';
+      badgeEl.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+    }
+    currentTemporalIntensity = Math.max(0.15, (15 - (temporalDay - 3) * 0.75) / 15);
+  }
+
+  // Dynamically interpolate KPI metrics
+  if (lastAnalysisResult) {
+    const baseDrop = lastAnalysisResult.backscatter_drop_db;
+    const baseArea = lastAnalysisResult.affected_area_sqkm;
+    const curDrop = (baseDrop * currentTemporalIntensity).toFixed(1);
+    const curArea = Math.round(baseArea * currentTemporalIntensity).toLocaleString();
+
+    document.getElementById('kpiBackscatter').innerHTML = `${curDrop} <span class="u">dB</span>`;
+    document.getElementById('kpiArea').innerHTML = `${curArea} <span class="u">km²</span>`;
+    const statMetricEl = document.getElementById('chartStatMetric');
+    if (statMetricEl) statMetricEl.textContent = `${curDrop} dB`;
+  }
+}
+
+function toggleTemporalPlay() {
+  const playBtn = document.getElementById('temporalPlayBtn');
+  if (temporalPlaying) {
+    temporalPlaying = false;
+    clearInterval(temporalInterval);
+    if (playBtn) playBtn.textContent = '▶';
+  } else {
+    temporalPlaying = true;
+    if (playBtn) playBtn.textContent = '⏸';
+    temporalInterval = setInterval(() => {
+      let nextDay = temporalDay + 1;
+      if (nextDay > 15) nextDay = -15;
+      setTemporalDay(nextDay);
+    }, 550);
+  }
+}
+
+// 16. Event Handlers
 function setupEventListeners() {
   // Drawer Toggles
   const leftDrawer = document.getElementById('leftDrawer');
@@ -723,6 +897,19 @@ function setupEventListeners() {
     rightDrawer.classList.toggle('collapsed');
     toggleRightBtn.textContent = rightDrawer.classList.contains('collapsed') ? '◀' : '▶';
   });
+
+  // Temporal Scrubber
+  const temporalSlider = document.getElementById('temporalSlider');
+  if (temporalSlider) {
+    temporalSlider.addEventListener('input', (e) => {
+      setTemporalDay(e.target.value);
+    });
+  }
+
+  const temporalPlayBtn = document.getElementById('temporalPlayBtn');
+  if (temporalPlayBtn) {
+    temporalPlayBtn.addEventListener('click', toggleTemporalPlay);
+  }
 
   // Sensitivity slider
   document.getElementById('sensitivitySlider').addEventListener('input', (e) => {
