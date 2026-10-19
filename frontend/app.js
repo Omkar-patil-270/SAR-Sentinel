@@ -1,5 +1,5 @@
 // ==========================================================================
-// SAR SENTINEL // 3D TACTICAL ORBITAL COMMAND ENGINE
+// SAR SENTINEL // MODERN 3D GEOSPATIAL INTELLIGENCE CLIENT
 // Powered by CesiumJS 3D WebGL Globe & Apache ECharts
 // NASA Space Apps Challenge 2026: Dancing with the SARs
 // ==========================================================================
@@ -18,27 +18,6 @@ let echartInstance = null;
 let autoRotate = true;
 let beamActive = true;
 let heatmapActive = true;
-let audioEnabled = true;
-
-// Web Audio API Sci-Fi Synthesizer
-let audioCtx = null;
-function playSciFiAudio(freq = 880, type = 'sine', duration = 0.08, gainVal = 0.04) {
-  if (!audioEnabled) return;
-  try {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + duration);
-  } catch (e) {}
-}
 
 // 1. Initialize DOM
 document.addEventListener('DOMContentLoaded', () => {
@@ -54,14 +33,11 @@ function startMissionClock() {
   const clockEl = document.getElementById('missionClock');
   function tick() {
     const now = new Date();
-    const y = now.getUTCFullYear();
-    const m = String(now.getUTCMonth() + 1).padStart(2, '0');
-    const d = String(now.getUTCDate()).padStart(2, '0');
     const hh = String(now.getUTCHours()).padStart(2, '0');
     const mm = String(now.getUTCMinutes()).padStart(2, '0');
     const ss = String(now.getUTCSeconds()).padStart(2, '0');
     const ms = String(now.getUTCMilliseconds()).padStart(3, '0');
-    clockEl.textContent = `${y}.${m}.${d} ${hh}:${mm}:${ss}.${ms}`;
+    clockEl.textContent = `${hh}:${mm}:${ss}.${ms} UTC`;
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
@@ -97,10 +73,10 @@ async function initCesiumGlobe() {
     // Atmospheric lighting and depth
     viewer.scene.globe.enableLighting = true;
     viewer.scene.globe.depthTestAgainstTerrain = false;
-    viewer.scene.screenSpaceCameraController.minimumZoomDistance = 50000;
+    viewer.scene.screenSpaceCameraController.minimumZoomDistance = 30000;
     viewer.scene.screenSpaceCameraController.maximumZoomDistance = 35000000;
 
-    // CartoDB Voyager Labels Layer
+    // CartoDB Voyager Clean Labels Layer
     viewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({
       url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png"
     }));
@@ -132,21 +108,20 @@ function setupNisarSatellite() {
     name: "NISAR Satellite",
     position: new Cesium.CallbackProperty(() => {
       orbitAngle += 0.003;
-      // Polar Sun-synchronous orbit simulation (inclination ~98.4°)
       const lat = Math.sin(orbitAngle) * 82.0;
       const lon = (orbitAngle * 45.0) % 360.0 - 180.0;
       return Cesium.Cartesian3.fromDegrees(lon, lat, altitude);
     }, false),
     point: {
-      pixelSize: 14,
-      color: Cesium.Color.fromCssColorString('#00f0ff'),
+      pixelSize: 12,
+      color: Cesium.Color.fromCssColorString('#00d4ff'),
       outlineColor: Cesium.Color.WHITE,
       outlineWidth: 2
     },
     label: {
       text: "🛰️ NISAR-1 [L+S BAND]",
-      font: "11px 'Share Tech Mono', monospace",
-      fillColor: Cesium.Color.fromCssColorString('#00f0ff'),
+      font: "11px 'JetBrains Mono', monospace",
+      fillColor: Cesium.Color.fromCssColorString('#00d4ff'),
       style: Cesium.LabelStyle.FILL_AND_OUTLINE,
       outlineWidth: 2,
       verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
@@ -154,7 +129,7 @@ function setupNisarSatellite() {
     }
   });
 
-  // 3D Radar Swath Beam (Projecting from NISAR down to ground)
+  // 3D Radar Swath Beam
   radarBeamEntity = viewer.entities.add({
     name: "SAR Swath Beam",
     polyline: {
@@ -168,7 +143,7 @@ function setupNisarSatellite() {
       material: new Cesium.PolylineGlowMaterialProperty({
         glowPower: 0.35,
         taperPower: 0.1,
-        color: Cesium.Color.fromCssColorString('#00f0ff')
+        color: Cesium.Color.fromCssColorString('#00d4ff')
       })
     }
   });
@@ -190,7 +165,7 @@ function setupAutoRotateListener() {
   }, Cesium.ScreenSpaceEventType.LEFT_DOWN);
 }
 
-// 6. 3D Procedural Radar Heatmap Canvas Generator (From GeoVision)
+// 6. 3D Procedural Radar Heatmap Canvas Generator
 function generateRadarHeatmapCanvas(type = "flood", size = 512) {
   const canvas = document.createElement("canvas");
   canvas.width = size;
@@ -200,24 +175,21 @@ function generateRadarHeatmapCanvas(type = "flood", size = 512) {
   const grad = ctx.createRadialGradient(c, c, 0, c, c, c);
 
   if (type === "flood") {
-    // Water Inundation: Deep Specular Blue -> Cyan -> Neon Crimson Delta
-    grad.addColorStop(0, "rgba(255, 0, 85, 0.95)");
-    grad.addColorStop(0.35, "rgba(255, 170, 0, 0.85)");
-    grad.addColorStop(0.65, "rgba(0, 240, 255, 0.6)");
-    grad.addColorStop(1, "rgba(0, 136, 255, 0)");
+    grad.addColorStop(0, "rgba(244, 63, 94, 0.95)");
+    grad.addColorStop(0.35, "rgba(245, 158, 11, 0.85)");
+    grad.addColorStop(0.65, "rgba(0, 212, 255, 0.6)");
+    grad.addColorStop(1, "rgba(0, 102, 255, 0)");
   } else if (type === "coastal") {
-    // Coastal Erosion / Mangrove: Emerald -> Amber -> Crimson
-    grad.addColorStop(0, "rgba(255, 0, 85, 0.95)");
-    grad.addColorStop(0.4, "rgba(0, 255, 136, 0.75)");
-    grad.addColorStop(0.8, "rgba(0, 240, 255, 0.35)");
-    grad.addColorStop(1, "rgba(0, 240, 255, 0)");
+    grad.addColorStop(0, "rgba(244, 63, 94, 0.95)");
+    grad.addColorStop(0.4, "rgba(16, 185, 129, 0.75)");
+    grad.addColorStop(0.8, "rgba(0, 212, 255, 0.35)");
+    grad.addColorStop(1, "rgba(0, 212, 255, 0)");
   } else {
-    // InSAR Glacial / Terrain: High-contrast interference fringes
-    grad.addColorStop(0, "rgba(255, 0, 85, 0.95)");
-    grad.addColorStop(0.25, "rgba(0, 240, 255, 0.85)");
-    grad.addColorStop(0.5, "rgba(255, 170, 0, 0.7)");
-    grad.addColorStop(0.75, "rgba(0, 255, 136, 0.45)");
-    grad.addColorStop(1, "rgba(0, 136, 255, 0)");
+    grad.addColorStop(0, "rgba(244, 63, 94, 0.95)");
+    grad.addColorStop(0.25, "rgba(0, 212, 255, 0.85)");
+    grad.addColorStop(0.5, "rgba(245, 158, 11, 0.7)");
+    grad.addColorStop(0.75, "rgba(16, 185, 129, 0.45)");
+    grad.addColorStop(1, "rgba(0, 102, 255, 0)");
   }
 
   ctx.fillStyle = grad;
@@ -227,51 +199,52 @@ function generateRadarHeatmapCanvas(type = "flood", size = 512) {
   return canvas;
 }
 
-// 7. Load Scenarios from Backend
+// 7. Load Scenarios from Backend & Render Quick Nav Tabs
 async function loadScenarios() {
-  const container = document.getElementById('scenarioList');
+  const navContainer = document.getElementById('scenarioQuickNav');
   try {
     const res = await fetch('/api/scenarios');
     const scenarios = await res.json();
     
-    container.innerHTML = '';
+    navContainer.innerHTML = '';
     scenarios.forEach((sc, i) => {
-      const card = document.createElement('div');
-      card.className = `sc-pill ${i === 0 ? 'active' : ''}`;
-      card.innerHTML = `
-        <div class="sc-pill-title">${sc.title}</div>
-        <div class="sc-pill-sub">
-          <span>📍 ${sc.location_name}</span>
-          <span class="sc-pill-tag">[${sc.category.split(' ')[0].toUpperCase()}]</span>
-        </div>
-      `;
-      card.addEventListener('click', () => {
-        playSciFiAudio(960, 'sine', 0.08);
-        selectScenario(sc, card);
+      const btn = document.createElement('button');
+      btn.className = `target-pill-btn ${i === 0 ? 'active' : ''}`;
+      
+      let icon = "📍";
+      if (sc.category.toLowerCase().includes("flood")) icon = "🌊";
+      else if (sc.category.toLowerCase().includes("coastal")) icon = "🌿";
+      else if (sc.category.toLowerCase().includes("glacial")) icon = "🏔️";
+      else icon = "🌴";
+
+      btn.innerHTML = `${icon} ${sc.title.split(' ')[0]} ${sc.location_name.split(',')[0]}`;
+      btn.addEventListener('click', () => {
+        selectScenario(sc, btn);
       });
-      container.appendChild(card);
+      navContainer.appendChild(btn);
     });
 
     if (scenarios.length > 0) {
-      selectScenario(scenarios[0], container.children[0]);
+      selectScenario(scenarios[0], navContainer.children[0]);
     }
   } catch (err) {
-    container.innerHTML = '<div class="panel-intro">Telemetry offline.</div>';
+    navContainer.innerHTML = '<span class="t-label">Telemetry Offline</span>';
   }
 }
 
 // 8. Select Scenario & Fly 3D Camera
-function selectScenario(sc, cardElement) {
+function selectScenario(sc, buttonElement) {
   currentScenario = sc;
 
   // Active pill style
-  document.querySelectorAll('.sc-pill').forEach(c => c.classList.remove('active'));
-  if (cardElement) cardElement.classList.add('active');
+  document.querySelectorAll('.target-pill-btn').forEach(b => b.classList.remove('active'));
+  if (buttonElement) buttonElement.classList.add('active');
 
-  // Update Dock Labels
-  document.getElementById('activeScenarioLabel').textContent = sc.title.toUpperCase();
-  document.getElementById('activeMissionLabel').textContent = 
-    `MISSION: ${sc.mission.toUpperCase()} • BASELINE: ${sc.baseline_date} VS EVENT: ${sc.event_date}`;
+  // Update Left Banner Information
+  document.getElementById('bannerTitle').textContent = sc.title;
+  document.getElementById('bannerCategory').textContent = sc.category.toUpperCase();
+  document.getElementById('bannerCoords').textContent = `${sc.lat}° N, ${sc.lon}° E`;
+  document.getElementById('bannerDesc').textContent = sc.description;
 
   // Fly 3D Cesium Camera directly to coordinates
   if (viewer) {
@@ -298,7 +271,7 @@ function selectScenario(sc, cardElement) {
   queryNasaGranules(sc.lat, sc.lon);
 }
 
-// 9. Render 3D Radar Heatmap & Pulsing Beacons on Cesium Globe
+// 9. Render 3D Radar Heatmap & Target Marker on Cesium Globe
 function render3DOverlay(sc) {
   if (radarHeatmapEntity) viewer.entities.remove(radarHeatmapEntity);
   if (targetBeaconEntity) viewer.entities.remove(targetBeaconEntity);
@@ -325,14 +298,14 @@ function render3DOverlay(sc) {
     name: "Sector Focus",
     position: Cesium.Cartesian3.fromDegrees(sc.lon, sc.lat, 1500),
     point: {
-      pixelSize: 10,
-      color: Cesium.Color.fromCssColorString('#ff0055'),
+      pixelSize: 8,
+      color: Cesium.Color.fromCssColorString('#f43f5e'),
       outlineColor: Cesium.Color.WHITE,
       outlineWidth: 2
     },
     label: {
-      text: `🎯 ${sc.location_name.toUpperCase()}`,
-      font: "12px 'Orbitron', monospace",
+      text: `📍 ${sc.location_name.toUpperCase()}`,
+      font: "12px 'Inter', sans-serif",
       fillColor: Cesium.Color.WHITE,
       style: Cesium.LabelStyle.FILL_AND_OUTLINE,
       outlineWidth: 2,
@@ -368,14 +341,13 @@ async function runAnalysis(lat, lon) {
   }
 }
 
-// 11. Render Results to KPI Cockpit & ECharts
+// 11. Render Results to KPI Grid & ECharts
 function renderAnalysisResults(data) {
-  document.getElementById('kpiBackscatter').innerHTML = `${data.backscatter_drop_db} <span class="unit">dB</span>`;
-  document.getElementById('kpiArea').innerHTML = `${data.affected_area_sqkm.toLocaleString()} <span class="unit">km²</span>`;
-  document.getElementById('kpiSeverity').textContent = `${data.severity} RISK DELTA`;
-  document.getElementById('severityPill').textContent = `${data.severity} RISK`;
-  document.getElementById('kpiCoherence').innerHTML = `${data.coherence_index} <span class="unit">γ</span>`;
-  document.getElementById('kpiConfidence').innerHTML = `${data.confidence_score} <span class="unit">%</span>`;
+  document.getElementById('kpiBackscatter').innerHTML = `${data.backscatter_drop_db} <span class="u">dB</span>`;
+  document.getElementById('kpiArea').innerHTML = `${data.affected_area_sqkm.toLocaleString()} <span class="u">km²</span>`;
+  document.getElementById('kpiSeverity').textContent = `${data.severity} Risk`;
+  document.getElementById('kpiCoherence').innerHTML = `${data.coherence_index} <span class="u">γ</span>`;
+  document.getElementById('kpiConfidence').innerHTML = `${data.confidence_score} <span class="u">%</span>`;
 
   // Update ECharts
   if (echartInstance && data.histogram) {
@@ -396,48 +368,48 @@ function initECharts() {
 function updateECharts(hist) {
   const option = {
     backgroundColor: 'transparent',
-    tooltip: { trigger: 'axis', textStyle: { fontFamily: 'Share Tech Mono' } },
+    tooltip: { trigger: 'axis', textStyle: { fontFamily: 'JetBrains Mono', fontSize: 11 } },
     legend: {
-      data: ['T-0 BASELINE', 'T-1 EVENT'],
-      textStyle: { color: '#8aa0c4', fontFamily: 'Share Tech Mono', fontSize: 10 },
+      data: ['T-0 Baseline', 'T-1 Event'],
+      textStyle: { color: '#94a3b8', fontFamily: 'Inter', fontSize: 10 },
       top: 0
     },
-    grid: { left: '8%', right: '5%', bottom: '15%', top: '22%' },
+    grid: { left: '10%', right: '5%', bottom: '15%', top: '22%' },
     xAxis: {
       type: 'category',
       data: hist.labels,
-      axisLine: { lineStyle: { color: 'rgba(0, 240, 255, 0.2)' } },
-      axisLabel: { color: '#455a7f', fontFamily: 'Share Tech Mono', fontSize: 9 }
+      axisLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.1)' } },
+      axisLabel: { color: '#64748b', fontFamily: 'JetBrains Mono', fontSize: 9 }
     },
     yAxis: {
       type: 'value',
-      splitLine: { lineStyle: { color: 'rgba(0, 240, 255, 0.05)' } },
-      axisLabel: { color: '#455a7f', fontFamily: 'Share Tech Mono', fontSize: 9 }
+      splitLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.05)' } },
+      axisLabel: { color: '#64748b', fontFamily: 'JetBrains Mono', fontSize: 9 }
     },
     series: [
       {
-        name: 'T-0 BASELINE',
+        name: 'T-0 Baseline',
         type: 'line',
         smooth: true,
         data: hist.baseline,
-        itemStyle: { color: '#00f0ff' },
+        itemStyle: { color: '#00d4ff' },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(0, 240, 255, 0.45)' },
-            { offset: 1, color: 'rgba(0, 240, 255, 0.0)' }
+            { offset: 0, color: 'rgba(0, 212, 255, 0.45)' },
+            { offset: 1, color: 'rgba(0, 212, 255, 0.0)' }
           ])
         }
       },
       {
-        name: 'T-1 EVENT',
+        name: 'T-1 Event',
         type: 'line',
         smooth: true,
         data: hist.event,
-        itemStyle: { color: '#ff0055' },
+        itemStyle: { color: '#f43f5e' },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(255, 0, 85, 0.45)' },
-            { offset: 1, color: 'rgba(255, 0, 85, 0.0)' }
+            { offset: 0, color: 'rgba(244, 63, 94, 0.45)' },
+            { offset: 1, color: 'rgba(244, 63, 94, 0.0)' }
           ])
         }
       }
@@ -449,7 +421,7 @@ function updateECharts(hist) {
 // 13. Query NASA ASF DAAC Granules
 async function queryNasaGranules(lat, lon) {
   const container = document.getElementById('granulesContainer');
-  container.innerHTML = '<div class="loading-state"><span class="pulsing-radar"></span> QUERYING NASA ASF ARCHIVE...</div>';
+  container.innerHTML = '<div class="granule-loading">Querying NASA Alaska Satellite Facility...</div>';
 
   const platform = document.getElementById('platformSelect').value;
   const maxResults = document.getElementById('maxGranulesSelect').value;
@@ -462,36 +434,45 @@ async function queryNasaGranules(lat, lon) {
 
     container.innerHTML = '';
     if (!data.granules || data.granules.length === 0) {
-      container.innerHTML = '<div class="loading-state">No radar granules found in direct footprint.</div>';
+      container.innerHTML = '<div class="granule-loading">No radar granules found in direct footprint.</div>';
       return;
     }
 
-    document.getElementById('granulesCountBadge').textContent = `${data.granules.length} GRANULES`;
+    document.getElementById('granulesCountBadge').textContent = `${data.granules.length} FOUND`;
 
     data.granules.forEach(g => {
-      const tile = document.createElement('div');
-      tile.className = 'granule-chip';
-      tile.innerHTML = `
-        <div class="granule-header" title="${g.granule_name}">📡 ${g.granule_name}</div>
-        <div class="granule-footer">
-          <span>${g.startTime ? g.startTime.split('T')[0] : '2024'} | ${g.polarization || 'Dual-Pol'}</span>
-          <a href="${g.downloadUrl || '#'}" target="_blank" class="granule-download">DOWNLOAD DATA ↗</a>
+      const row = document.createElement('div');
+      row.className = 'granule-row';
+      row.innerHTML = `
+        <div class="granule-name-text" title="${g.granule_name}">📡 ${g.granule_name}</div>
+        <div class="granule-foot-row">
+          <span>${g.startTime ? g.startTime.split('T')[0] : '2024'} • ${g.polarization || 'Dual-Pol'}</span>
+          <a href="${g.downloadUrl || '#'}" target="_blank" class="granule-dl-link">Download ↗</a>
         </div>
       `;
-      container.appendChild(tile);
+      container.appendChild(row);
     });
   } catch (err) {
-    container.innerHTML = '<div class="loading-state">NASA API temporarily busy.</div>';
+    container.innerHTML = '<div class="granule-loading">NASA API connection temporarily busy.</div>';
   }
 }
 
 // 14. Event Handlers
 function setupEventListeners() {
-  // Audio toggle
-  document.getElementById('audioToggleBtn').addEventListener('click', () => {
-    audioEnabled = !audioEnabled;
-    document.getElementById('audioStatusText').textContent = audioEnabled ? 'SFX: ON' : 'SFX: OFF';
-    if (audioEnabled) playSciFiAudio(1100, 'sine', 0.1);
+  // Drawer Toggles
+  const leftDrawer = document.getElementById('leftDrawer');
+  const rightDrawer = document.getElementById('rightDrawer');
+  const toggleLeftBtn = document.getElementById('toggleLeftBtn');
+  const toggleRightBtn = document.getElementById('toggleRightBtn');
+
+  toggleLeftBtn.addEventListener('click', () => {
+    leftDrawer.classList.toggle('collapsed');
+    toggleLeftBtn.textContent = leftDrawer.classList.contains('collapsed') ? '▶' : '◀';
+  });
+
+  toggleRightBtn.addEventListener('click', () => {
+    rightDrawer.classList.toggle('collapsed');
+    toggleRightBtn.textContent = rightDrawer.classList.contains('collapsed') ? '◀' : '▶';
   });
 
   // Sensitivity slider
@@ -501,21 +482,18 @@ function setupEventListeners() {
 
   // Run Analysis
   document.getElementById('runAnalysisBtn').addEventListener('click', () => {
-    playSciFiAudio(750, 'square', 0.12);
     if (currentScenario) runAnalysis(currentScenario.lat, currentScenario.lon);
   });
 
   // Query NASA
   document.getElementById('queryNasaBtn').addEventListener('click', () => {
-    playSciFiAudio(880, 'triangle', 0.08);
     if (currentScenario) queryNasaGranules(currentScenario.lat, currentScenario.lon);
   });
 
-  // 3D Auto-Rotate Button
+  // 3D Auto-Orbit Button
   document.getElementById('autoRotateBtn').addEventListener('click', () => {
     autoRotate = !autoRotate;
     updateAutoRotateUI();
-    playSciFiAudio(600, 'sine', 0.06);
   });
 
   // 3D Satellite Swath Beam Toggle
@@ -523,7 +501,6 @@ function setupEventListeners() {
     beamActive = !beamActive;
     document.getElementById('beamStatusText').textContent = beamActive ? 'ACTIVE' : 'MUTED';
     document.getElementById('satelliteBeamBtn').classList.toggle('active', beamActive);
-    playSciFiAudio(700, 'sine', 0.06);
   });
 
   // 3D Heatmap Toggle
@@ -532,13 +509,11 @@ function setupEventListeners() {
     document.getElementById('heatmapStatusText').textContent = heatmapActive ? 'ON' : 'OFF';
     document.getElementById('heatmapToggleBtn').classList.toggle('active', heatmapActive);
     if (currentScenario) render3DOverlay(currentScenario);
-    playSciFiAudio(800, 'sine', 0.06);
   });
 
   // Report Modal
   const modal = document.getElementById('reportModal');
   document.getElementById('exportReportBtn').addEventListener('click', () => {
-    playSciFiAudio(1200, 'sine', 0.14);
     generateReport();
     modal.classList.remove('hidden');
   });
@@ -551,11 +526,11 @@ function setupEventListeners() {
 function updateAutoRotateUI() {
   const btn = document.getElementById('autoRotateBtn');
   const txt = document.getElementById('autoRotateText');
-  txt.textContent = autoRotate ? 'ACTIVE' : 'PAUSED';
+  txt.textContent = autoRotate ? 'ON' : 'OFF';
   btn.classList.toggle('active', autoRotate);
 }
 
-// 15. Generate NASA Mission Report
+// 15. Generate NASA Mission Report (No Personal Name)
 function generateReport() {
   const sc = currentScenario || { title: "Custom Observation", location_name: "Global", metrics: {} };
   const backscatter = document.getElementById('kpiBackscatter').innerText;
@@ -565,30 +540,30 @@ function generateReport() {
 
   document.getElementById('reportBody').innerHTML = `
     <div>
-      <div style="color: #00f0ff; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; margin-bottom: 8px;">
+      <div style="color: #00d4ff; font-family: 'JetBrains Mono', monospace; font-size: 11px; margin-bottom: 8px;">
         MISSION BRIEFING // NASA SPACE APPS CHALLENGE 2026 // DANCING WITH THE SARS
       </div>
-      <h2 style="color: #fff; font-family: 'Orbitron', monospace; font-size: 1.25rem; margin-bottom: 12px;">
-        PROJECT: SAR SENTINEL (COMMANDER: OMKAR RAMESH PATIL)
+      <h2 style="color: #fff; font-size: 18px; margin-bottom: 12px;">
+        PROJECT: SAR SENTINEL (MISSION STATION: NISAR-01)
       </h2>
-      <hr style="border: 0; border-top: 1px solid rgba(0, 240, 255, 0.25); margin-bottom: 14px;">
+      <hr style="border: 0; border-top: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 14px;">
       
       <p style="margin-bottom: 6px;"><strong>OBSERVATION SECTOR:</strong> ${sc.location_name} (${sc.title})</p>
       <p style="margin-bottom: 6px;"><strong>MISSION DATASET:</strong> NASA-ISRO Synthetic Aperture Radar (NISAR) & Sentinel-1</p>
       <p style="margin-bottom: 12px;"><strong>PHYSICAL MECHANISM:</strong> Specular backscatter drop ($\Delta \sigma^0$) and InSAR phase decorrelation</p>
       
-      <div style="background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.25); padding: 14px; border-radius: 4px; margin: 14px 0;">
-        <h4 style="color: #00ff88; font-family: 'Share Tech Mono', monospace; margin-bottom: 8px;">QUANTITATIVE OBSERVATION RESULTS:</h4>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-family: 'Share Tech Mono', monospace; font-size: 0.95rem;">
-          <div>• Δ BACKSCATTER: <strong style="color: #ff0055;">${backscatter}</strong></div>
-          <div>• ALTERED SURFACE: <strong style="color: #ffaa00;">${area}</strong></div>
-          <div>• COHERENCE INDEX: <strong style="color: #00f0ff;">${coherence}</strong></div>
-          <div>• ALGORITHM CONFIDENCE: <strong style="color: #00ff88;">${confidence}</strong></div>
+      <div style="background: rgba(0, 212, 255, 0.06); border: 1px solid rgba(0, 212, 255, 0.2); padding: 14px; border-radius: 8px; margin: 14px 0;">
+        <h4 style="color: #10b981; font-family: 'JetBrains Mono', monospace; font-size: 12px; margin-bottom: 8px;">QUANTITATIVE OBSERVATION RESULTS:</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+          <div>• Δ BACKSCATTER: <strong style="color: #f43f5e;">${backscatter}</strong></div>
+          <div>• ALTERED SURFACE: <strong style="color: #f59e0b;">${area}</strong></div>
+          <div>• COHERENCE INDEX: <strong style="color: #00d4ff;">${coherence}</strong></div>
+          <div>• ALGORITHM CONFIDENCE: <strong style="color: #10b981;">${confidence}</strong></div>
         </div>
       </div>
 
-      <p style="color: #8aa0c4; font-size: 0.85rem; font-family: 'Share Tech Mono', monospace; margin-top: 14px;">
-        Generated by <strong>SAR SENTINEL 3D COMMAND ENGINE</strong> on ${new Date().toUTCString()}. Formulated for submission to NASA Space Apps 2026 Global Evaluation Committee.
+      <p style="color: #94a3b8; font-size: 11.5px; margin-top: 14px;">
+        Report generated by <strong>SAR SENTINEL 3D COMMAND ENGINE</strong> on ${new Date().toUTCString()}. Formulated for submission to NASA Space Apps 2026 Global Evaluation Committee.
       </p>
     </div>
   `;
