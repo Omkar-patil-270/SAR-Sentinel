@@ -87,9 +87,9 @@ async function initCesiumGlobe() {
     viewer.scene.screenSpaceCameraController.minimumZoomDistance = 30000;
     viewer.scene.screenSpaceCameraController.maximumZoomDistance = 35000000;
 
-    // CartoDB Voyager Clean Labels Layer
+    // Clean Public High-Res Reference Borders & Places Layer (100% Keyless, No Watermarks)
     viewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({
-      url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png"
+      url: "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
     }));
 
     // Setup 3D NISAR Satellite Orbit & Swath Beam
