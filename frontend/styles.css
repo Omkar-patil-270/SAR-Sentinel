@@ -512,6 +512,82 @@ body.geo-body {
   line-height: 1.4;
 }
 
+/* CUSTOM COORDINATE TARGETING CARD */
+.custom-coord-card {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.coord-header {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  color: var(--cyan);
+  letter-spacing: 0.6px;
+}
+
+.coord-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.coord-input-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.coord-input-group label {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.coord-input {
+  width: 100%;
+  background: rgba(13, 20, 36, 0.95);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 5px 6px;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.coord-input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+}
+
+.coord-go-btn {
+  background: linear-gradient(135deg, var(--cyan), #0066ff);
+  border: none;
+  color: #030816;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.coord-go-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.6);
+}
+
 /* FORM CONTROLS */
 .input-section {
   display: flex;

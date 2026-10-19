@@ -1,43 +1,129 @@
-# 🛰️ SAR Sentinel: Automated Earth & Ocean Surface Dynamics via NASA-ISRO NISAR Radar
+# 🛰️ SAR SENTINEL: Autonomous Radar Earth Observation Intelligence
+### NASA Space Apps Challenge 2026 // Challenge: *Dancing with the SARs*
+**Mission Station:** `NISAR-01` | **Team:** `SAR Sentinel` | **Platform:** NASA-ISRO NISAR & Sentinel-1
 
-**NASA Space Apps Challenge 2026**  
-**Challenge:** Dancing with the SARs  
-**Team:** SAR Sentinel  
-**Participant:** Omkar Ramesh Patil  
-
----
-
-## 🌍 Executive Summary
-Earth's surface is constantly in motion. From catastrophic river inundations and coastal mangrove erosion to high-altitude glacial lake expansions, monitoring these dynamics in all-weather, day-or-night conditions is essential. 
-
-**SAR Sentinel** is an interactive, full-stack Earth Observation platform leveraging Synthetic Aperture Radar (SAR) observations from the joint **NASA-ISRO NISAR** mission (L-Band & S-Band) and **Sentinel-1** (C-Band). By querying NASA's Alaska Satellite Facility (ASF) DAAC in real-time, the platform analyzes backscatter intensity differentials ($\Delta \sigma^0$) to automatically delineate surface water inundation, map coastal erosion vectors, and visualize terrain changes.
+[![NASA Space Apps](https://img.shields.io/badge/NASA%20Space%20Apps-2026%20Global%20Challenge-blue.svg)](https://www.spaceappschallenge.org)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg)](https://fastapi.tiangolo.com)
+[![CesiumJS](https://img.shields.io/badge/3D%20Globe-CesiumJS%20WebGL-2196F3.svg)](https://cesium.com)
+[![Apache ECharts](https://img.shields.io/badge/Analytics-Apache%20ECharts%205.5-E43961.svg)](https://echarts.apache.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
-## ⚡ Key Features
-1. **Live NASA ASF DAAC Archive Querying:** Direct integration with NASA's Alaska Satellite Facility API to discover real SAR observation granules by platform, coordinates, and date.
-2. **Quantitative Radar Change Detection Engine:** Computes specular backscatter drop (dB) over standing floodwaters and polarimetric coherence alteration across coastlines.
-3. **NASA Mission Control Dashboard:** Dark-mode cybernetic HUD with real-time NISAR orbital telemetry (747 km altitude, 242 km swath, 12-day repeat cycle).
-4. **Interactive Leaflet GeoJSON Mapping:** Pulsing radar anomaly hotspots, baseline vs event temporal slider, and mouse-hover coordinates HUD.
-5. **Mission Report Generation:** One-click generation of printable scientific reports formatted for academic capstone evaluation and NASA Space Apps submission.
+## 🌍 1. Executive Summary
+During extreme climatic hazards (monsoonal cloudbursts, severe cyclones, and sudden glacial lake outburst floods), conventional optical satellites (Landsat, Sentinel-2) are completely blinded by persistent cloud cover and dense rainfall.
+
+**SAR Sentinel** is an autonomous 3D geospatial intelligence platform that exploits all-weather, day-and-night Synthetic Aperture Radar (SAR) observations from the joint **NASA-ISRO NISAR** mission (L-band/S-band) and **Sentinel-1** (C-band). Connecting directly to the **NASA Alaska Satellite Facility (ASF) DAAC API**, the system computes radar backscatter drop ($\Delta\sigma^0$), interferometric phase decorrelation ($\gamma$), and polarimetric decomposition in near real-time.
 
 ---
 
-## 🛠️ Architecture & Tech Stack
-* **Backend:** Python 3.11, FastAPI, Uvicorn, Requests, NumPy.
-* **Frontend:** Vanilla HTML5/CSS3, JavaScript (ES6+), Leaflet.js, Chart.js.
-* **Data Sources:** NASA Alaska Satellite Facility (ASF) DAAC, NASA-ISRO NISAR mission data, ESA Sentinel-1 radar archives.
+## ⚡ 2. Core Capabilities
+
+### 🛰️ Photorealistic 3D Cesium WebGL Earth
+* **747 km Sun-Synchronous Orbit (SSO):** Real-time 3D orbital trajectory of the NISAR spacecraft.
+* **Dynamic Radar Swath Beam:** Pyramidal sensor beam projecting down to Earth along the orbital pass.
+* **3D Inundation Surface Heatmap:** Procedural radar backscatter canvas draped directly across planetary topography.
+* **Real NASA ASF DAAC Swath Footprints:** Parses spatial WKT coverage polygons returned from NASA's archive and renders glowing neon bounding footprints on Earth with click-to-focus flight navigation.
+
+### ⏱️ Temporal SAR Time-Scrubber
+* Scrub between **Day -15 (Baseline Dry Terrain)** $\to$ **Day 0 (Peak Disaster Inundation)** $\to$ **Day +15 (Drainage & Recession)**.
+* Smooth on-globe alpha interpolation via `Cesium.CallbackProperty`.
+* Auto-Play / Pause loop (`▶` / `⏸`) with live KPI metrics interpolation.
+
+### 📊 Advanced Multi-Mode Radar Analytics (Apache ECharts)
+* **Mode 1 — Spectral Backscatter Curve:** Compares T-0 pre-event baseline vs. T-1 event backscatter distribution, highlighting the annotated **Specular Water Threshold ($-6.5\text{ dB}$)** and peak anomaly dip.
+* **Mode 2 — Polarimetric Radar Rose:** Quad-pol radar chart decomposing $S_{HH}$ (surface), $S_{HV}$ (volume), $S_{VV}$ (roughness), $S_{VH}$ (cross-pol), coherence $\gamma$, and entropy $H$.
+* **Mode 3 — 60-Day ML Temporal Forecast:** Historical acquisitions coupled with an exponential drainage recovery curve and shaded $\pm 95\%$ confidence ribbon.
+
+### 🌐 Custom Global Coordinate Targeting
+* Input any latitude and longitude across Earth to dynamically query NASA ASF DAAC and execute SAR change detection outside predefined scenarios.
 
 ---
 
-## 🚀 Quickstart (Running the Project)
+## 📐 3. Theoretical Principles & Radar Mathematics
 
-```bash
-# 1. Open terminal in the project directory
-cd d:\FINAL-DANCE
+### 3.1 Specular Attenuation ($\Delta\sigma^0$)
+Smooth open water acts as a specular reflector, bouncing radar microwave pulses away from the sensor:
+$$\Delta\sigma^0 = \sigma_{\text{event}}^0 - \sigma_{\text{baseline}}^0 < -6.5\text{ dB}$$
 
-# 2. Run the application
-python run.py
+### 3.2 Interferometric Phase Decorrelation ($\gamma$)
+For structural stability and debris flow monitoring, complex InSAR interferometric coherence is computed:
+$$\gamma = \frac{|\langle s_1 s_2^* \rangle|}{\sqrt{\langle |s_1|^2 \rangle \langle |s_2|^2 \rangle}}, \quad 0 \le \gamma \le 1$$
+
+---
+
+## 🏗️ 4. Architecture
+
+```
+┌────────────────────────────────────────────────────────┐
+│                   3D Cesium WebGL Client               │
+│  - 747km NISAR Spacecraft & Dynamic Swath Beam         │
+│  - Real-time 3D Surface Heatmap (CesiumJS)             │
+│  - Real NASA ASF Granule Footprint Polygons            │
+│  - Multi-Mode Apache ECharts (Spectral, Rose, Forecast)│
+└──────────────────────────▲─────────────────────────────┘
+                           │ WebSockets & REST APIs
+┌──────────────────────────┴─────────────────────────────┐
+│                    FastAPI Backend                     │
+│  - /api/analyze: Backscatter drop, coherence, hotspots │
+│  - /api/nasa/search: Live NASA ASF DAAC Client         │
+│  - /api/scenarios: Curated benchmark datasets          │
+└──────────────────────────▲─────────────────────────────┘
+                           │ Direct HTTP Requests
+┌──────────────────────────┴─────────────────────────────┐
+│       NASA Alaska Satellite Facility (ASF) DAAC        │
+│  Endpoint: https://api.daac.asf.alaska.edu/services    │
+└────────────────────────────────────────────────────────┘
 ```
 
-The application will automatically initialize the FastAPI backend and open your default browser at `http://127.0.0.1:8000`.
+---
+
+## 🚀 5. Quickstart & Installation
+
+### Prerequisites
+* Python 3.10+
+* Modern Web Browser with WebGL 2.0 support (Chrome, Edge, Firefox, Brave)
+
+### One-Command Launch
+```bash
+# Clone the repository
+git clone https://github.com/your-username/sar-sentinel.git
+cd sar-sentinel
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Launch application
+python run.py
+```
+The server will initialize at `http://127.0.0.1:8000` and automatically open your default browser.
+
+---
+
+## 📁 6. Repository Structure
+```
+FINAL-DANCE/
+├── backend/
+│   ├── app.py              # FastAPI server & REST endpoints
+│   ├── nasa_client.py      # Live NASA ASF DAAC API query engine
+│   ├── sar_engine.py       # Radar backscatter, coherence & forecast algorithms
+│   └── scenarios.py        # Benchmark disaster case studies
+├── frontend/
+│   ├── index.html          # Geospatial intelligence HUD layout
+│   ├── styles.css          # Glassmorphism design system & HUD styling
+│   └── app.js              # Cesium 3D Globe, ECharts & temporal scrubber
+├── docs/
+│   └── PITCH_DECK.md       # 7-Slide official capstone pitch presentation
+├── NASA_SPACE_APPS_SUBMISSION.md  # Official submission dossier
+├── run.py                  # One-click auto-launch script
+└── requirements.txt        # Python package dependencies
+```
+
+---
+
+## 📜 7. NASA Space Apps Challenge 2026 Submission
+* **Challenge:** Dancing with the SARs
+* **Project Team:** SAR Sentinel
+* **Mission Station:** NISAR-01
+* **Full Submission Paper:** [NASA_SPACE_APPS_SUBMISSION.md](NASA_SPACE_APPS_SUBMISSION.md)
+* **Capstone Pitch Deck:** [docs/PITCH_DECK.md](docs/PITCH_DECK.md)

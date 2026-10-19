@@ -28,6 +28,7 @@ let temporalInterval = null;
 
 let granuleEntities = [];
 let activeGranuleEntity = null;
+let hotspotEntities = [];
 
 // 1. Initialize DOM
 document.addEventListener('DOMContentLoaded', () => {
@@ -327,6 +328,60 @@ function render3DOverlay(sc) {
   });
 }
 
+// 9b. Render 3D Radar Hotspots Anomaly Vectors on Cesium Globe
+function clearHotspots() {
+  if (viewer) {
+    hotspotEntities.forEach(ent => viewer.entities.remove(ent));
+  }
+  hotspotEntities = [];
+}
+
+function render3DHotspots(geojson) {
+  clearHotspots();
+  if (!viewer || !geojson || !geojson.features) return;
+
+  geojson.features.forEach(feat => {
+    const coords = feat.geometry.coordinates; // [lon, lat]
+    const props = feat.properties;
+    const lon = coords[0];
+    const lat = coords[1];
+
+    const ent = viewer.entities.add({
+      name: `🚨 ${props.type}`,
+      position: Cesium.Cartesian3.fromDegrees(lon, lat, 20),
+      ellipse: {
+        semiMinorAxis: props.radius || 1500,
+        semiMajorAxis: props.radius || 1500,
+        material: Cesium.Color.fromCssColorString('rgba(244, 63, 94, 0.22)'),
+        outline: true,
+        outlineColor: Cesium.Color.fromCssColorString('#f43f5e'),
+        outlineWidth: 2,
+        height: 40
+      },
+      point: {
+        pixelSize: 8,
+        color: Cesium.Color.fromCssColorString('#f43f5e'),
+        outlineColor: Cesium.Color.WHITE,
+        outlineWidth: 2
+      },
+      label: {
+        text: `⚠️ Δσ⁰: ${props.backscatter_delta_db} dB`,
+        font: "10px 'JetBrains Mono', monospace",
+        fillColor: Cesium.Color.WHITE,
+        backgroundColor: Cesium.Color.fromCssColorString('rgba(10, 16, 30, 0.85)'),
+        showBackground: true,
+        backgroundPadding: new Cesium.Cartesian2(4, 2),
+        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        outlineWidth: 1,
+        pixelOffset: new Cesium.Cartesian2(0, -14),
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(100.0, 600000.0)
+      }
+    });
+
+    hotspotEntities.push(ent);
+  });
+}
+
 // 10. Run SAR Change Detection
 async function runAnalysis(lat, lon) {
   const analysisType = document.getElementById('analysisTypeSelect').value;
@@ -354,7 +409,6 @@ async function runAnalysis(lat, lon) {
   }
 }
 
-// 11. Render Results to KPI Grid & ECharts
 // 11. Render Results to KPI Grid & Multi-Mode ECharts
 function renderAnalysisResults(data) {
   lastAnalysisResult = data;
@@ -371,6 +425,11 @@ function renderAnalysisResults(data) {
   const statPhaseEl = document.getElementById('chartStatPhase');
   if (statPhaseEl) {
     statPhaseEl.textContent = data.severity === 'HIGH' || data.severity === 'SEVERE' ? '28 Days' : (data.severity === 'CRITICAL' ? '42 Days' : '14 Days');
+  }
+
+  // Render 3D Hotspot Anomaly Rings on Globe
+  if (data.geojson_hotspots) {
+    render3DHotspots(data.geojson_hotspots);
   }
 
   // Render active ECharts mode
@@ -934,6 +993,54 @@ function setupEventListeners() {
   document.getElementById('sensitivitySlider').addEventListener('input', (e) => {
     document.getElementById('sensitivityVal').textContent = `${e.target.value}x`;
   });
+
+  // Custom Coordinate Targeting
+  const targetCustomCoordBtn = document.getElementById('targetCustomCoordBtn');
+  if (targetCustomCoordBtn) {
+    targetCustomCoordBtn.addEventListener('click', () => {
+      const lat = parseFloat(document.getElementById('customLatInput').value);
+      const lon = parseFloat(document.getElementById('customLonInput').value);
+
+      if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+        alert("Please enter valid coordinates: Latitude (-90 to 90) and Longitude (-180 to 180).");
+        return;
+      }
+
+      // Deselect predefined scenario quick-pills
+      document.querySelectorAll('.target-pill-btn').forEach(b => b.classList.remove('active'));
+
+      // Update active banner
+      document.getElementById('bannerTitle').textContent = `Target: ${lat.toFixed(2)}°N, ${lon.toFixed(2)}°E`;
+      document.getElementById('bannerCategory').textContent = "CUSTOM GLOBAL SECTOR";
+      document.getElementById('bannerCoords').textContent = `${lat.toFixed(2)}° N, ${lon.toFixed(2)}° E`;
+      document.getElementById('bannerDesc').textContent = "Custom user-targeted SAR observation coordinate.";
+
+      // Fly 3D Cesium camera
+      if (viewer) {
+        autoRotate = false;
+        updateAutoRotateUI();
+        viewer.camera.flyTo({
+          destination: Cesium.Cartesian3.fromDegrees(lon, lat, 260000.0),
+          orientation: {
+            heading: Cesium.Math.toRadians(0),
+            pitch: Cesium.Math.toRadians(-55),
+            roll: 0.0
+          },
+          duration: 2.2
+        });
+
+        render3DOverlay({
+          lat: lat,
+          lon: lon,
+          location_name: `Custom (${lat.toFixed(2)}, ${lon.toFixed(2)})`,
+          category: document.getElementById('analysisTypeSelect').value
+        });
+      }
+
+      runAnalysis(lat, lon);
+      queryNasaGranules(lat, lon);
+    });
+  }
 
   // Run Analysis
   document.getElementById('runAnalysisBtn').addEventListener('click', () => {
