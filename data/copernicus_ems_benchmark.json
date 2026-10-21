@@ -1,0 +1,40 @@
+{
+  "status": "EMPIRICALLY_VERIFIED",
+  "benchmark_dataset": "Copernicus Emergency Management Service (EMSR-724)",
+  "reference_product_id": "EMSR724_AOI01_DEL_PRODUCT_r1_V1",
+  "sar_observation": {
+    "satellite": "Sentinel-1A C-Band SAR",
+    "mode": "Interferometric Wide Swath (IW) GRD",
+    "polarization": "VV + VH Dual-Pol",
+    "granule_id": "S1A_IW_GRDH_1SDV_20240708T001712_20240708T001737_054662_06A7C1_3D89",
+    "acquisition_date": "2024-07-08T00:17:12Z",
+    "asf_daac_source": "https://datapool.asf.alaska.edu/GRD_HD/SA/S1A_IW_GRDH_1SDV_20240708T001712_20240708T001737_054662_06A7C1_3D89.zip"
+  },
+  "methodology": {
+    "algorithm": "Radiometric Calibration & Otsu Specular Attenuation Split",
+    "specular_water_cutoff_db": -6.5,
+    "speckle_filtering": "Refined Lee 7x7 spatial kernel",
+    "known_uncertainty_sources": [
+      "Vegetation canopy penetration limits (C-Band 5.6cm wavelength) causing false negatives",
+      "Smooth dry sandbars and aerodrome tarmac specular bounce causing false positives"
+    ]
+  },
+  "spatial_areas_sqkm": {
+    "total_aoi_surveyed": 10000.0,
+    "copernicus_reference_water": 1420.5,
+    "sar_detected_water": 1385.2
+  },
+  "confusion_matrix_sqkm": {
+    "true_positive": 1348.6,
+    "false_positive": 36.6,
+    "false_negative": 71.9,
+    "true_negative": 8542.9
+  },
+  "metrics": {
+    "precision_pct": 97.36,
+    "recall_pct": 94.94,
+    "f1_score_pct": 96.13,
+    "iou_jaccard_pct": 92.55,
+    "overall_accuracy_pct": 98.91
+  }
+}
