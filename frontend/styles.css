@@ -879,6 +879,110 @@ body.geo-body {
 .stat-pill .dot.cyan { background: var(--cyan); box-shadow: 0 0 5px var(--cyan); }
 .stat-pill .dot.emerald { background: var(--emerald); box-shadow: 0 0 5px var(--emerald); }
 
+/* SCIENTIFIC GROUND-TRUTH VALIDATION CARD */
+.validation-container-card {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.val-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.val-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.val-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #fff;
+}
+
+.val-ref-tag {
+  font-size: 8.5px;
+  color: var(--emerald);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.val-f1-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: #052e16;
+  background: var(--emerald);
+  padding: 2px 8px;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+  white-space: nowrap;
+}
+
+.val-scores-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.val-score-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.val-score-label {
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.val-score-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.val-score-num.highlight {
+  color: var(--emerald);
+}
+
+.val-matrix-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  padding-top: 6px;
+}
+
+.val-matrix-row .matrix-tag b {
+  color: var(--cyan);
+}
+
 /* GRANULES CARD */
 .granules-container-card {
   background: rgba(255, 255, 255, 0.03);
