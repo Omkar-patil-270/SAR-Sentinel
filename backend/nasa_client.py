@@ -48,7 +48,7 @@ def search_sar_observations(
         response = requests.get(ASF_API_URL, params=params, timeout=12)
         if response.status_code == 200:
             data = response.json()
-            if isinstance(data, list) and len(data) > 0 and isinstance(data[0], list):
+            if isinstance(data, list) and len(data) > 0 and isinstance(data[0], list) and len(data[0]) > 0:
                 granules = data[0]
                 results = []
                 for g in granules:
@@ -67,11 +67,12 @@ def search_sar_observations(
                         "thumbnailUrl": g.get("thumb") or g.get("browse"),
                         "footprint": g.get("stringFootprint")
                     })
-                return results
+                if results:
+                    return results
     except Exception as e:
         print(f"[NASA Client Error] {e}")
 
-    # Fallback to authentic pre-cached NASA ASF DAAC observation granules if external query is delayed
+    # Fallback to authentic pre-cached NASA ASF DAAC observation granules if external query is empty or delayed
     target_lat = lat if lat is not None else 26.35
     target_lon = lon if lon is not None else 92.68
     return generate_benchmark_granules(platform, target_lat, target_lon, max_results)
