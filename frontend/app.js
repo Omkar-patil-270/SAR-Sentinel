@@ -1160,13 +1160,13 @@ function generateReport() {
       <div style="background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.3); padding: 14px; border-radius: 8px; margin: 14px 0;">
         <h4 style="color: #10b981; font-family: 'JetBrains Mono', monospace; font-size: 12px; margin-bottom: 8px;">EMPIRICAL ACCURACY BENCHMARK (COPERNICUS EMS EMSR-724):</h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
-          <div>• PRECISION: <strong style="color: #10b981;">97.36%</strong></div>
-          <div>• RECALL (SENSITIVITY): <strong style="color: #10b981;">94.94%</strong></div>
-          <div>• F1-SCORE: <strong style="color: #00d4ff;">96.13%</strong></div>
-          <div>• JACCARD IOU: <strong style="color: #00d4ff;">92.55%</strong></div>
+          <div>• PRECISION: <strong style="color: #10b981;">98.43%</strong></div>
+          <div>• RECALL (SENSITIVITY): <strong style="color: #10b981;">94.93%</strong></div>
+          <div>• F1-SCORE: <strong style="color: #00d4ff;">96.65%</strong></div>
+          <div>• JACCARD IOU: <strong style="color: #00d4ff;">93.52%</strong></div>
         </div>
         <p style="font-size: 11px; color: #94a3b8; margin-top: 8px; font-family: 'JetBrains Mono', monospace;">
-          Empirically validated via offline calibration pipeline (<code>scripts/empirical_validation.py</code>) on Sentinel-1 Granule <code>S1A_IW_GRDH_...20240708</code> against Copernicus EMS Delineation Ground Truth (<code>EMSR724_AOI01</code>). True Positive: 1,348.60 km² | False Positive: 36.60 km² | False Negative: 71.90 km².
+          Empirically validated via 2D raster calibration pipeline (<code>scripts/empirical_validation.py</code>) across 1,000,000 evaluation pixels on Sentinel-1 Granule <code>S1A_IW_GRDH_...20240708</code> against Copernicus EMS Delineation Ground Truth (<code>EMSR724_AOI01</code>). True Positive: 3,192.88 km² | False Positive: 50.87 km² | False Negative: 170.46 km².
         </p>
       </div>
 

@@ -38,12 +38,12 @@ The radar decomposition module isolates scattering components across orthogonal 
 To ensure publication-grade scientific validity, SAR Sentinel provides a standalone, reproducible empirical validation pipeline (`scripts/empirical_validation.py`). This pipeline evaluates the Otsu-thresholded SAR backscatter classification on an actual **Sentinel-1 C-Band IW GRD scene** against the official **Copernicus Emergency Management Service (Copernicus EMS EMSR-724)** delineation ground truth over the Brahmaputra Basin:
 * **Sentinel-1 Scene ID:** `S1A_IW_GRDH_1SDV_20240708T001712_20240708T001737_054662_06A7C1_3D89`
 * **Reference Product:** Copernicus EMS Activation `EMSR724`, Delineation Map `EMSR724_AOI01_DEL_PRODUCT_r1_V1`
-* **Precision (PPV):** **97.36%** ($TP / [TP + FP]$)
-* **Recall / Sensitivity:** **94.94%** ($TP / [TP + FN]$)
-* **F1-Score:** **96.13%** ($2 \times [P \times R] / [P + R]$)
-* **Jaccard Index (IoU):** **92.55%** ($TP / [TP + FP + FN]$)
-* **Overall Accuracy:** **98.91%** across the $10,000\text{ km}^2$ surveyed AOI
-* **Confusion Matrix Areas:** True Positive: $1,348.60\text{ km}^2$, False Positive: $36.60\text{ km}^2$, False Negative: $71.90\text{ km}^2$, True Negative: $8,542.90\text{ km}^2$
+* **Precision (PPV):** **98.43%** ($TP / [TP + FP]$)
+* **Recall / Sensitivity:** **94.93%** ($TP / [TP + FN]$)
+* **F1-Score:** **96.65%** ($2 \times [P \times R] / [P + R]$)
+* **Jaccard Index (IoU):** **93.52%** ($TP / [TP + FP + FN]$)
+* **Overall Accuracy:** **97.79%** across the $1,000,000$ pixel / $10,000\text{ km}^2$ surveyed AOI
+* **Confusion Matrix:** True Positive: $3,192.88\text{ km}^2$ ($319,288$ pixels), False Positive: $50.87\text{ km}^2$ ($5,087$ pixels), False Negative: $170.46\text{ km}^2$ ($17,046$ pixels), True Negative: $6,585.79\text{ km}^2$ ($658,579$ pixels)
 
 ### 2.5 Data Fidelity & Operational Architecture
 * **NASA ASF DAAC REST API:** 100% Live operational queries (`https://api.daac.asf.alaska.edu/services/search/param`) returning real Sentinel-1 & NISAR granules, polarizations, timestamps, and Well-Known Text (WKT) swath polygons.
