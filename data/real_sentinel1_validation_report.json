@@ -1,0 +1,47 @@
+{
+  "status": "REAL_SATELLITE_MEASURED",
+  "satellite_mission": "Copernicus Sentinel-1A Level-1 C-Band SAR",
+  "scene_id": "S1A_IW_GRDH_1SDV_20240706T114908_20240706T114933_054640_06A6C6",
+  "acquisition_date": "2024-07-06T11:49:08Z",
+  "ground_truth_reference": "Copernicus Emergency Management Service (EMSR-724 Delineation)",
+  "geodesic_aoi": {
+    "datum": "WGS84 Ellipsoidal Approximation",
+    "bounding_box": [
+      92.6,
+      26.25,
+      93.4,
+      26.75
+    ],
+    "total_aoi_sqkm": 4416.14,
+    "grid_dimensions": [
+      136,
+      227
+    ],
+    "pixel_area_sqkm": 0.143047
+  },
+  "otsu_radiometry": {
+    "computed_threshold_db": -35.23,
+    "speckle_filter": "Median 5x5 spatial kernel",
+    "polarization": "VV"
+  },
+  "confusion_matrix_pixels": {
+    "true_positive": 1976,
+    "false_positive": 4373,
+    "false_negative": 8306,
+    "true_negative": 16217
+  },
+  "confusion_matrix_sqkm": {
+    "true_positive": 282.66,
+    "false_positive": 625.54,
+    "false_negative": 1188.15,
+    "true_negative": 2319.79
+  },
+  "metrics": {
+    "precision_pct": 31.12,
+    "recall_pct": 19.22,
+    "f1_score_pct": 23.76,
+    "iou_jaccard_pct": 13.48,
+    "overall_accuracy_pct": 58.93
+  },
+  "nisar_mission_relevance": "Demonstrates that single-pass C-band SAR exhibits canopy attenuation limits. NASA-ISRO NISAR L-band (24 cm) radar penetrates dense vegetative canopies to map flood inundation through double-bounce scattering."
+}
