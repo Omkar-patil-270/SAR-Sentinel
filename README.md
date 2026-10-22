@@ -50,32 +50,32 @@ $$\Delta\sigma^0 = \sigma_{\text{event}}^0 - \sigma_{\text{baseline}}^0 < -6.5\t
 For structural stability and debris flow monitoring, complex InSAR interferometric coherence is computed:
 $$\gamma = \frac{|\langle s_1 s_2^* \rangle|}{\sqrt{\langle |s_1|^2 \rangle \langle |s_2|^2 \rangle}}, \quad 0 \le \gamma \le 1$$
 
-### 3.3 Ground-Truth Accuracy & Copernicus EMS Validation
-To satisfy rigorous scientific peer-review criteria, SAR Sentinel includes a deterministic, reproducible offline validation pipeline (`scripts/empirical_validation.py`). It benchmarks automated Otsu-thresholded SAR backscatter classification on an actual **Copernicus Sentinel-1 C-Band IW GRD acquisition** against the official **Copernicus Emergency Management Service (Copernicus EMS Rapid Mapping EMSR-724)** reference delineation product over the Brahmaputra Basin (July 2024 flood event):
+### 3.3 Synthetic Simulation Benchmark (Calibrated on Copernicus EMS EMSR-724)
+To ensure scientific transparency, SAR Sentinel includes an automated benchmark pipeline (`scripts/empirical_validation.py`). It evaluates the mathematical separation power of the **Otsu Global Bimodal Thresholding** algorithm on a georeferenced WGS84 spatial grid ($1000 \times 1000$ cells, $4,416.14\text{ km}^2$) using literature-calibrated synthetic C-Band backscatter distributions ($\mathcal{N}_{\text{water}} = -21.5\text{ dB}, \mathcal{N}_{\text{land}} = -10.2\text{ dB}$) draped over the official **Copernicus Emergency Management Service (EMSR-724)** delineation boundary:
 
-* **Sentinel-1 Acquisition:** `S1A_IW_GRDH_1SDV_20240708T001712_20240708T001737_054662_06A7C1_3D89`
-* **Reference Product:** Copernicus EMS Activation `EMSR724`, Delineation Map `EMSR724_AOI01_DEL_PRODUCT_r1_V1`
-* **Validation Script:** Run `python scripts/empirical_validation.py` to deterministically recompute the benchmark matrix.
+> [!NOTE]
+> **Academic & Scientific Integrity Notice:**  
+> These metrics demonstrate algorithmic separation efficiency on literature-modeled physical distributions. They represent a high-fidelity synthetic benchmark rather than empirical processing of raw 1GB+ Level-1 Sentinel-1 GeoTIFF rasters (which is slated for Phase 2).
 
-| Metric | Measured Score | Scientific Formula | Ground-Truth Standard |
+| Metric | Simulation Score | Scientific Formula | Calibration Reference |
 |---|---|---|---|
-| **Precision (PPV)** | **98.43%** | $TP / (TP + FP)$ | Copernicus EMS EMSR-724 Delineation |
-| **Recall (Sensitivity)** | **94.93%** | $TP / (TP + FN)$ | Copernicus EMS EMSR-724 Delineation |
+| **Precision (PPV)** | **98.43%** | $TP / (TP + FP)$ | Copernicus EMS EMSR-724 Delineation Extent |
+| **Recall (Sensitivity)** | **94.93%** | $TP / (TP + FN)$ | Copernicus EMS EMSR-724 Delineation Extent |
 | **F1-Score** | **96.65%** | $2 \times (P \times R) / (P + R)$ | Harmonic mean of Precision & Recall |
 | **Jaccard Index (IoU)** | **93.52%** | $TP / (TP + FP + FN)$ | Spatial Intersection over Union |
-| **Overall Accuracy** | **97.79%** | $(TP + TN) / \text{Total Area}$ | Full $1,000,000$ pixel / $10,000\text{ km}^2$ grid |
-| **True Positive Area** | **3,192.88 km²** | $319,288$ verified pixels | Mapped floodwater surface |
-| **False Positive Area** | **50.87 km²** | $5,087$ specular non-water pixels | Smooth aerodrome tarmac & calm sandbars |
-| **False Negative Area** | **170.46 km²** | $17,046$ attenuated pixels | Inundated terrain under dense forest canopy |
+| **Overall Accuracy** | **97.79%** | $(TP + TN) / \text{Total Cells}$ | Full $1,000,000$ cell / $4,416.14\text{ km}^2$ WGS84 AOI |
+| **True Positive Area** | **1,410.02 km²** | $319,288$ verified cells | Modeled specular water |
+| **False Positive Area** | **22.46 km²** | $5,087$ specular non-water cells | Smooth aerodrome tarmac & calm sandbars |
+| **False Negative Area** | **75.28 km²** | $17,046$ attenuated cells | Sub-canopy concealed floodwater |
 
-### 3.4 Data Fidelity Matrix: Real Earth Data vs. Calibrated Modeling
-| System Component | Real Satellite Observation / Live Data | Calibrated Physics Engine | Why This Architecture? |
+### 3.4 Data Fidelity Matrix: Real Spacecraft Telemetry vs. Calibrated Modeling
+| System Component | Real Satellite Observation / Live Data | Calibrated Physics Engine | Academic Transparency |
 |---|---|---|---|
 | **NASA ASF DAAC Granules** | ✅ **100% Real Live REST API** (`api.daac.asf.alaska.edu`) | — | Queries real Sentinel-1 & NISAR granules, footprints & download URLs |
 | **WKT Satellite Swath Footprints**| ✅ **100% Real Geographic Polygons** | — | Parsed from NASA WKT strings directly into Cesium 3D coordinates |
 | **Orbital Dynamics** | ✅ **747 km Sun-Synchronous Orbit** | Keplarian ephemeris propagation | Matches true NISAR 98.4° inclination & 12-day repeat pass |
-| **Empirical Ground-Truth Validation** | ✅ **Copernicus EMS EMSR-724 & S1A GRD** | Tested via `scripts/empirical_validation.py` | Proven empirical benchmark against independent space agency emergency mapping |
-| **Backscatter Computation** | Calibrated against empirical S1A bounds | Specular attenuation engine ($\Delta\sigma^0 < -6.5\text{ dB}$) | Downloading raw 8GB SLC SAR rasters requires 32GB server RAM and 40 min per scene; our engine delivers sub-second 3D operational intelligence |
+| **Benchmark Delineation** | ✅ **Copernicus EMS EMSR-724 Extent** | Vector ray-casting rasterization | True emergency delineation geometry |
+| **Radar Backscatter Evaluation** | Calibrated to literature bounds | Synthetic Gaussian mixture ($\Delta\sigma^0 < -6.5\text{ dB}$) | Evaluates threshold mathematics; Level-1 raw GeoTIFF ingestion in future roadmap |
 
 ---
 

@@ -1,42 +1,31 @@
 {
-  "status": "EMPIRICALLY_VERIFIED",
-  "benchmark_dataset": "Copernicus Emergency Management Service (EMSR-724)",
-  "reference_product_id": "EMSR724_AOI01_DEL_PRODUCT_r1_V1",
-  "sar_observation": {
-    "satellite": "Sentinel-1A C-Band SAR",
-    "mode": "Interferometric Wide Swath (IW) GRD",
-    "polarization": "VV + VH Dual-Pol",
-    "granule_id": "S1A_IW_GRDH_1SDV_20240708T001712_20240708T001737_054662_06A7C1_3D89",
-    "acquisition_date": "2024-07-08T00:17:12Z",
-    "asf_daac_source": "https://datapool.asf.alaska.edu/GRD_HD/SA/S1A_IW_GRDH_1SDV_20240708T001712_20240708T001737_054662_06A7C1_3D89.zip"
-  },
-  "raster_grid": {
-    "dimensions": [
-      1000,
-      1000
+  "status": "SYNTHETIC_DATA_SIMULATION",
+  "validation_type": "Synthetic Backscatter Simulation calibrated to Copernicus EMS EMSR-724 extent",
+  "real_sar_imagery_processed": false,
+  "geodesic_projection": {
+    "datum": "WGS84",
+    "center_latitude_deg": 26.5,
+    "aoi_dimensions_km": [
+      79.7,
+      55.41
     ],
-    "total_pixels": 1000000,
-    "sqkm_per_pixel": 0.01,
-    "aoi_bounding_box": [
-      92.6,
-      26.25,
-      93.4,
-      26.75
-    ]
+    "total_aoi_geodesic_sqkm": 4416.14,
+    "cell_area_sqkm": 0.004416
+  },
+  "target_scene_metadata": {
+    "modeled_satellite": "Sentinel-1A C-Band SAR",
+    "modeled_granule_id": "S1A_IW_GRDH_1SDV_20240708T001712_20240708T001737_054662_06A7C1_3D89",
+    "ground_truth_reference": "Copernicus Emergency Management Service (EMSR-724 Delineation r1_V1)"
   },
   "methodology": {
     "algorithm": "Otsu Global Bimodal Radiometric Variance Maximization",
     "computed_threshold_db": -15.89,
-    "maximized_between_class_variance": 2257.014578,
-    "known_uncertainty_sources": [
-      "Vegetation canopy penetration limits (C-Band 5.6cm wavelength) causing false negatives",
-      "Smooth dry sandbars and aerodrome tarmac specular bounce causing false positives"
-    ]
+    "maximized_between_class_variance": 2257.014578
   },
   "spatial_areas_sqkm": {
-    "total_aoi_surveyed": 10000.0,
-    "copernicus_reference_water": 3363.34,
-    "sar_detected_water": 3243.75
+    "total_aoi_surveyed": 4416.14,
+    "copernicus_reference_water": 1485.3,
+    "sar_detected_water": 1432.49
   },
   "confusion_matrix_pixels": {
     "true_positive": 319288,
@@ -45,10 +34,10 @@
     "true_negative": 658579
   },
   "confusion_matrix_sqkm": {
-    "true_positive": 3192.88,
-    "false_positive": 50.87,
-    "false_negative": 170.46,
-    "true_negative": 6585.79
+    "true_positive": 1410.02,
+    "false_positive": 22.46,
+    "false_negative": 75.28,
+    "true_negative": 2908.38
   },
   "metrics": {
     "precision_pct": 98.43,

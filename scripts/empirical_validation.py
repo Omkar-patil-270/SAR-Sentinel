@@ -1,10 +1,14 @@
 """
-SAR Sentinel — Deterministic Pixel-Level Empirical Validation Pipeline
-Benchmark: Sentinel-1 C-Band SAR vs. Copernicus Emergency Management Service (EMSR-724)
+SAR Sentinel — Synthetic Simulation Benchmark Pipeline
+Benchmark: Synthetic C-Band SAR Model calibrated to Copernicus EMS (EMSR-724) Boundaries
 Mission: NASA Space Apps Challenge 2026 // Track: Dancing with the SARs
 
-This script performs real 2D spatial raster generation, Otsu bimodal thresholding,
-and pixel-by-pixel confusion matrix evaluation against the Copernicus EMS EMSR-724 ground truth.
+ACADEMIC TRANSPARENCY NOTICE:
+This script performs a 2D spatial simulation of Otsu bimodal radar thresholding.
+Backscatter values are synthetically generated using literature-calibrated Gaussian bounds
+(specular water vs. diffuse vegetation) draped over the Copernicus EMS EMSR-724 flood boundary.
+It evaluates algorithmic mathematical separation on synthetic data; it does NOT ingest
+raw 1GB+ Level-1 Sentinel-1 GRD GeoTIFF raster imagery.
 """
 
 import json
@@ -43,7 +47,7 @@ def point_in_polygon(px, py, poly_coords):
 
 def otsu_threshold(image_1d, bins=256):
     """
-    Authentic mathematical implementation of Otsu's Global Bimodal Thresholding.
+    Mathematical implementation of Otsu's Global Bimodal Thresholding.
     Finds the threshold t that maximizes between-class variance sigma_b^2(t).
     """
     hist, bin_edges = np.histogram(image_1d, bins=bins, density=True)
@@ -64,14 +68,14 @@ def otsu_threshold(image_1d, bins=256):
     threshold = bin_centers[idx]
     return threshold, bin_centers, hist, variance12[idx]
 
-def run_empirical_validation():
+def run_synthetic_benchmark():
     print("================================================================================")
-    print("[SAR SENTINEL] DETERMINISTIC 2D RASTER VALIDATION PIPELINE")
+    print("[SAR SENTINEL] SYNTHETIC-DATA SIMULATION BENCHMARK")
     print("================================================================================")
-    print("Satellite Mission : Copernicus Sentinel-1 C-Band (5.405 GHz) Dual-Pol (VV+VH)")
-    print("Granule Scene ID  : S1A_IW_GRDH_1SDV_20240708T001712_20240708T001737_054662_06A7C1_3D89")
-    print("Ground Truth Ref  : Copernicus Emergency Management Service (EMSR-724 Delineation)")
-    print("AOI Survey Target : Brahmaputra River Basin & Kaziranga Floodplain, Assam, India")
+    print("Evaluation Type   : Synthetic Backscatter Simulation (Calibrated to Published Bounds)")
+    print("Target AOI        : Brahmaputra River Basin & Kaziranga Floodplain, Assam, India")
+    print("Reference Extent  : Copernicus Emergency Management Service (EMSR-724 Delineation)")
+    print("Status Notice     : Algorithm verified on synthetic data; raw SAR raster ingest is in roadmap")
     print("--------------------------------------------------------------------------------")
 
     # 1. Load Copernicus EMS EMSR-724 GeoJSON Delineation Polygons
@@ -79,23 +83,35 @@ def run_empirical_validation():
     with open(geojson_path, "r", encoding="utf-8") as f:
         emsr_data = json.load(f)
 
-    # 2. Define Georeferenced Evaluation Grid (AOI)
-    # Longitude: 92.60°E to 93.40°E (dx = 0.80° ≈ 80 km)
-    # Latitude:  26.25°N to 26.75°N (dy = 0.50° ≈ 55 km)
-    # Resolution: 1000 x 1000 grid cells -> Total 1,000,000 evaluation pixels
-    # Grid cell dimensions: ~80m x 55m ≈ 0.0044 km² (calibrated to 10,000 km² survey footprint)
-    total_survey_sqkm = 10000.0
+    # 2. Geodesic WGS84 Projection & Evaluation Grid
+    # Longitude: 92.60°E to 93.40°E (d_lon = 0.80°)
+    # Latitude:  26.25°N to 26.75°N (d_lat = 0.50°)
+    lon_min, lon_max = 92.60, 93.40
+    lat_min, lat_max = 26.25, 26.75
+    center_lat = (lat_min + lat_max) / 2.0  # 26.50° N
+
+    # WGS84 Geodesic arc-length formulas:
+    # 1 deg latitude ≈ 110.82 km at 26.5°N
+    # 1 deg longitude ≈ 111.320 * cos(lat) ≈ 99.626 km at 26.5°N
+    km_per_deg_lat = 110.82
+    km_per_deg_lon = 111.320 * np.cos(np.radians(center_lat))
+
+    aoi_width_km = (lon_max - lon_min) * km_per_deg_lon   # 0.80 * 99.626 ≈ 79.70 km
+    aoi_height_km = (lat_max - lat_min) * km_per_deg_lat  # 0.50 * 110.82 ≈ 55.41 km
+    total_geodesic_sqkm = round(aoi_width_km * aoi_height_km, 2)  # ≈ 4,416.18 km²
+
     grid_rows, grid_cols = 1000, 1000
     total_pixels = grid_rows * grid_cols
-    sqkm_per_pixel = total_survey_sqkm / total_pixels  # 0.01 sq km per pixel
+    sqkm_per_pixel = total_geodesic_sqkm / total_pixels  # ≈ 0.004416 km² per pixel (44.16 x 100m)
 
-    lons = np.linspace(92.60, 93.40, grid_cols)
-    lats = np.linspace(26.75, 26.25, grid_rows)
+    lons = np.linspace(lon_min, lon_max, grid_cols)
+    lats = np.linspace(lat_max, lat_min, grid_rows)
     lon_grid, lat_grid = np.meshgrid(lons, lats)
 
-    print(f"[*] Grid Dimensions : {grid_rows} x {grid_cols} ({total_pixels:,} evaluation pixels)")
-    print(f"[*] Pixel Area      : {sqkm_per_pixel:.4f} km² per pixel ({sqkm_per_pixel * 100:.1f} hectares)")
-    print(f"[*] Total AOI Area  : {total_survey_sqkm:,.1f} km²")
+    print(f"[*] Geodesic AOI Extent : {aoi_width_km:.2f} km (W) x {aoi_height_km:.2f} km (H)")
+    print(f"[*] Total Geodesic Area : {total_geodesic_sqkm:,.2f} km² (WGS84 Ellipsoidal Approximation)")
+    print(f"[*] Grid Resolution     : {grid_rows} x {grid_cols} ({total_pixels:,} cells)")
+    print(f"[*] Ground Cell Area    : {sqkm_per_pixel * 1e6:.1f} m² ({sqkm_per_pixel:.6f} km² / 0.44 hectares)")
     print("--------------------------------------------------------------------------------")
 
     # 3. Rasterize Copernicus EMS Ground-Truth Mask (M_ref)
@@ -112,33 +128,35 @@ def run_empirical_validation():
     print(f"    -> Copernicus Reference Water Pixels : {ref_pixel_count:,} ({ref_water_sqkm:.2f} km²)")
     print(f"    -> Copernicus Reference Dry Pixels   : {total_pixels - ref_pixel_count:,} ({ref_dry_sqkm:.2f} km²)")
 
-    # 4. Generate Calibrated Sentinel-1 SAR Backscatter Array (sigma0_VV in dB)
-    # Using deterministic seed for absolute scientific reproducibility
+    # 4. Synthesize Physical Radar Backscatter Distribution (sigma0_VV in dB)
+    # Calibrated to published literature values for C-Band Sentinel-1:
+    # Open water specular reflection: N(-21.5 dB, 1.6 dB)
+    # Dry vegetation / soil diffuse: N(-10.2 dB, 2.1 dB)
     np.random.seed(42)
     sar_sigma0_db = np.zeros((grid_rows, grid_cols), dtype=np.float32)
 
-    # Water pixels: Specular reflection away from radar antenna (-24 to -18 dB)
+    # Water pixels
     sar_sigma0_db[ref_mask] = np.random.normal(-21.5, 1.6, size=ref_pixel_count)
 
-    # Dry terrain pixels: Diffuse volume/roughness backscatter (-13 to -7 dB)
+    # Dry terrain pixels
     dry_count = total_pixels - ref_pixel_count
     sar_sigma0_db[~ref_mask] = np.random.normal(-10.2, 2.1, size=dry_count)
 
-    # Inject physically verified SAR radar error phenomena:
-    # A) Sub-canopy flood concealment (False Negatives): dense forest crowns reflect C-band radar
-    canopy_concealment_count = int(ref_pixel_count * 0.0506) # ~5% sub-canopy water
+    # Inject physically realistic radar misclassification noise:
+    # A) Sub-canopy flood concealment (False Negatives): ~5.0%
+    canopy_concealment_count = int(ref_pixel_count * 0.0506)
     canopy_indices = np.where(ref_mask)
     selected_canopy = np.random.choice(len(canopy_indices[0]), size=canopy_concealment_count, replace=False)
     sar_sigma0_db[canopy_indices[0][selected_canopy], canopy_indices[1][selected_canopy]] = np.random.normal(-12.8, 1.1, size=canopy_concealment_count)
 
-    # B) Smooth runway / calm tarmac / dry sandbars (False Positives): specular bounce off flat dry ground
-    specular_dry_count = int(dry_count * 0.00428) # ~0.43% smooth tarmac/sand
+    # B) Smooth tarmac / sandbar specular bounce (False Positives): ~0.43%
+    specular_dry_count = int(dry_count * 0.00428)
     dry_indices = np.where(~ref_mask)
     selected_dry = np.random.choice(len(dry_indices[0]), size=specular_dry_count, replace=False)
     sar_sigma0_db[dry_indices[0][selected_dry], dry_indices[1][selected_dry]] = np.random.normal(-20.2, 1.2, size=specular_dry_count)
 
-    # 5. Execute Mathematical Otsu Bimodal Thresholding
-    print("[*] Computing Otsu Global Bimodal Threshold across SAR backscatter distribution...")
+    # 5. Apply Otsu Global Bimodal Thresholding
+    print("[*] Computing Otsu Global Bimodal Threshold across backscatter distribution...")
     threshold_db, bin_centers, hist, max_variance = otsu_threshold(sar_sigma0_db.ravel(), bins=256)
     print(f"    -> Dynamically Computed Cutoff Threshold (t*) : {threshold_db:.2f} dB")
     print(f"    -> Maximized Between-Class Variance (sigma_b^2): {max_variance:.6f}")
@@ -146,26 +164,23 @@ def run_empirical_validation():
     # 6. Perform 2D Boolean Matrix Operations
     classified_water_mask = (sar_sigma0_db < threshold_db)
 
-    # Confusion Matrix Masks
     tp_mask = classified_water_mask & ref_mask
     fp_mask = classified_water_mask & (~ref_mask)
     fn_mask = (~classified_water_mask) & ref_mask
     tn_mask = (~classified_water_mask) & (~ref_mask)
 
-    # Pixel counts
     tp_pixels = int(np.count_nonzero(tp_mask))
     fp_pixels = int(np.count_nonzero(fp_mask))
     fn_pixels = int(np.count_nonzero(fn_mask))
     tn_pixels = int(np.count_nonzero(tn_mask))
 
-    # Metric areas (km²)
     tp_sqkm = round(tp_pixels * sqkm_per_pixel, 2)
     fp_sqkm = round(fp_pixels * sqkm_per_pixel, 2)
     fn_sqkm = round(fn_pixels * sqkm_per_pixel, 2)
     tn_sqkm = round(tn_pixels * sqkm_per_pixel, 2)
     detected_water_sqkm = round((tp_pixels + fp_pixels) * sqkm_per_pixel, 2)
 
-    # 7. Calculate Statistical Benchmark Metrics
+    # 7. Metrics
     precision = (tp_pixels / (tp_pixels + fp_pixels)) * 100.0
     recall = (tp_pixels / (tp_pixels + fn_pixels)) * 100.0
     f1_score = 2.0 * (precision * recall) / (precision + recall)
@@ -173,49 +188,47 @@ def run_empirical_validation():
     overall_accuracy = ((tp_pixels + tn_pixels) / total_pixels) * 100.0
 
     print("--------------------------------------------------------------------------------")
-    print("[+] PIXEL-BY-PIXEL CONFUSION MATRIX (1,000,000 Evaluation Grid Cells):")
+    print("[+] CONFUSION MATRIX (1,000,000 Evaluation Cells, Geodesic WGS84 Calibration):")
     print(f"   * True Positive (TP)  : {tp_pixels:>7,} pixels | {tp_sqkm:>8.2f} km²  (Correctly Mapped Floodwater)")
     print(f"   * False Positive (FP) : {fp_pixels:>7,} pixels | {fp_sqkm:>8.2f} km²  (Asphalt/Sand Specular Bounce)")
     print(f"   * False Negative (FN) : {fn_pixels:>7,} pixels | {fn_sqkm:>8.2f} km²  (Sub-Canopy Concealed Water)")
     print(f"   * True Negative (TN)  : {tn_pixels:>7,} pixels | {tn_sqkm:>8.2f} km²  (Correctly Mapped Dry Land)")
     print("--------------------------------------------------------------------------------")
-    print("[=] MEASURED SCIENTIFIC ACCURACY:")
+    print("[=] SYNTHETIC-DATA SIMULATION RESULTS:")
     print(f"   - Precision (PPV)     : {precision:.2f}%")
     print(f"   - Recall (Sensitivity): {recall:.2f}%")
     print(f"   - F1-Score (Harmonic) : {f1_score:.2f}%")
     print(f"   - Jaccard Index (IoU) : {iou_jaccard:.2f}%")
     print(f"   - Overall Accuracy    : {overall_accuracy:.2f}%")
     print("================================================================================")
+    print("⚠️  ACADEMIC AUDIT NOTE: These figures represent algorithm separation efficiency on")
+    print("    literature-modeled synthetic distributions. They do not constitute empirical")
+    print("    validation against raw Sentinel-1 Level-1 GRD SAR raster rasters.")
+    print("================================================================================")
 
     results = {
-        "status": "EMPIRICALLY_VERIFIED",
-        "benchmark_dataset": "Copernicus Emergency Management Service (EMSR-724)",
-        "reference_product_id": "EMSR724_AOI01_DEL_PRODUCT_r1_V1",
-        "sar_observation": {
-            "satellite": "Sentinel-1A C-Band SAR",
-            "mode": "Interferometric Wide Swath (IW) GRD",
-            "polarization": "VV + VH Dual-Pol",
-            "granule_id": "S1A_IW_GRDH_1SDV_20240708T001712_20240708T001737_054662_06A7C1_3D89",
-            "acquisition_date": "2024-07-08T00:17:12Z",
-            "asf_daac_source": "https://datapool.asf.alaska.edu/GRD_HD/SA/S1A_IW_GRDH_1SDV_20240708T001712_20240708T001737_054662_06A7C1_3D89.zip"
+        "status": "SYNTHETIC_DATA_SIMULATION",
+        "validation_type": "Synthetic Backscatter Simulation calibrated to Copernicus EMS EMSR-724 extent",
+        "real_sar_imagery_processed": False,
+        "geodesic_projection": {
+            "datum": "WGS84",
+            "center_latitude_deg": center_lat,
+            "aoi_dimensions_km": [round(aoi_width_km, 2), round(aoi_height_km, 2)],
+            "total_aoi_geodesic_sqkm": total_geodesic_sqkm,
+            "cell_area_sqkm": round(sqkm_per_pixel, 6)
         },
-        "raster_grid": {
-            "dimensions": [grid_rows, grid_cols],
-            "total_pixels": total_pixels,
-            "sqkm_per_pixel": round(sqkm_per_pixel, 4),
-            "aoi_bounding_box": [92.60, 26.25, 93.40, 26.75]
+        "target_scene_metadata": {
+            "modeled_satellite": "Sentinel-1A C-Band SAR",
+            "modeled_granule_id": "S1A_IW_GRDH_1SDV_20240708T001712_20240708T001737_054662_06A7C1_3D89",
+            "ground_truth_reference": "Copernicus Emergency Management Service (EMSR-724 Delineation r1_V1)"
         },
         "methodology": {
             "algorithm": "Otsu Global Bimodal Radiometric Variance Maximization",
             "computed_threshold_db": round(float(threshold_db), 2),
-            "maximized_between_class_variance": round(float(max_variance), 6),
-            "known_uncertainty_sources": [
-                "Vegetation canopy penetration limits (C-Band 5.6cm wavelength) causing false negatives",
-                "Smooth dry sandbars and aerodrome tarmac specular bounce causing false positives"
-            ]
+            "maximized_between_class_variance": round(float(max_variance), 6)
         },
         "spatial_areas_sqkm": {
-            "total_aoi_surveyed": total_survey_sqkm,
+            "total_aoi_surveyed": total_geodesic_sqkm,
             "copernicus_reference_water": ref_water_sqkm,
             "sar_detected_water": detected_water_sqkm
         },
@@ -245,12 +258,7 @@ def run_empirical_validation():
         json.dump(results, f, indent=2)
     print(f"📁 Benchmark artifact saved to: {os.path.abspath(out_path)}")
 
-    # Also save a sample 2D classification slice as numpy array for QGIS / scientific verification
-    slice_path = os.path.join(os.path.dirname(__file__), "..", "data", "sar_classified_slice.npy")
-    np.save(slice_path, classified_water_mask[::10, ::10])
-    print(f"📁 Sample 2D classified raster slice saved to: {os.path.abspath(slice_path)}")
-
     return results
 
 if __name__ == "__main__":
-    run_empirical_validation()
+    run_synthetic_benchmark()

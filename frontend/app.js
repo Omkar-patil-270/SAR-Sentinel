@@ -1158,7 +1158,7 @@ function generateReport() {
       </div>
 
       <div style="background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.3); padding: 14px; border-radius: 8px; margin: 14px 0;">
-        <h4 style="color: #10b981; font-family: 'JetBrains Mono', monospace; font-size: 12px; margin-bottom: 8px;">EMPIRICAL ACCURACY BENCHMARK (COPERNICUS EMS EMSR-724):</h4>
+        <h4 style="color: #10b981; font-family: 'JetBrains Mono', monospace; font-size: 12px; margin-bottom: 8px;">SYNTHETIC SIMULATION BENCHMARK (CALIBRATED MODELING):</h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
           <div>• PRECISION: <strong style="color: #10b981;">98.43%</strong></div>
           <div>• RECALL (SENSITIVITY): <strong style="color: #10b981;">94.93%</strong></div>
@@ -1166,7 +1166,7 @@ function generateReport() {
           <div>• JACCARD IOU: <strong style="color: #00d4ff;">93.52%</strong></div>
         </div>
         <p style="font-size: 11px; color: #94a3b8; margin-top: 8px; font-family: 'JetBrains Mono', monospace;">
-          Empirically validated via 2D raster calibration pipeline (<code>scripts/empirical_validation.py</code>) across 1,000,000 evaluation pixels on Sentinel-1 Granule <code>S1A_IW_GRDH_...20240708</code> against Copernicus EMS Delineation Ground Truth (<code>EMSR724_AOI01</code>). True Positive: 3,192.88 km² | False Positive: 50.87 km² | False Negative: 170.46 km².
+          Evaluated via 2D WGS84 geodesic simulation pipeline (<code>scripts/empirical_validation.py</code>) across 1,000,000 cells calibrated to Copernicus EMS Delineation Ground Truth (<code>EMSR724_AOI01</code>). True Positive: 1,410.02 km² | False Positive: 22.46 km² | False Negative: 75.28 km². (Algorithm validated on synthetic radar distributions; Level-1 raw raster ingestion scheduled for future phase).
         </p>
       </div>
 

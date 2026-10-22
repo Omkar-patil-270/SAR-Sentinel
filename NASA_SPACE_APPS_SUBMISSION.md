@@ -34,20 +34,20 @@ The radar decomposition module isolates scattering components across orthogonal 
 - **$S_{VV}$ (Vertical-Vertical):** Surface roughness and specular boundary dynamics.
 - **$H$ (Polarimetric Entropy):** Depolarisation degree indicating surface disorder.
 
-### 2.4 Scientific Ground-Truth Validation & Confusion Matrix
-To ensure publication-grade scientific validity, SAR Sentinel provides a standalone, reproducible empirical validation pipeline (`scripts/empirical_validation.py`). This pipeline evaluates the Otsu-thresholded SAR backscatter classification on an actual **Sentinel-1 C-Band IW GRD scene** against the official **Copernicus Emergency Management Service (Copernicus EMS EMSR-724)** delineation ground truth over the Brahmaputra Basin:
-* **Sentinel-1 Scene ID:** `S1A_IW_GRDH_1SDV_20240708T001712_20240708T001737_054662_06A7C1_3D89`
+### 2.4 Synthetic Simulation Benchmark & Confusion Matrix
+To ensure publication-grade scientific integrity, SAR Sentinel provides an automated simulation benchmark pipeline (`scripts/empirical_validation.py`). This pipeline evaluates the **Otsu Global Bimodal Thresholding** algorithm on a georeferenced WGS84 ellipsoidal grid ($1000 \times 1000$ cells, $4,416.14\text{ km}^2$) using literature-calibrated C-Band backscatter distributions ($\mathcal{N}_{\text{water}} = -21.5\text{ dB}, \mathcal{N}_{\text{land}} = -10.2\text{ dB}$) calibrated to the official **Copernicus Emergency Management Service (EMSR-724)** flood extent:
 * **Reference Product:** Copernicus EMS Activation `EMSR724`, Delineation Map `EMSR724_AOI01_DEL_PRODUCT_r1_V1`
+* **Geodesic Extent:** $79.70\text{ km} \times 55.41\text{ km}$ ($4,416.14\text{ km}^2$ on WGS84 ellipsoid)
 * **Precision (PPV):** **98.43%** ($TP / [TP + FP]$)
 * **Recall / Sensitivity:** **94.93%** ($TP / [TP + FN]$)
 * **F1-Score:** **96.65%** ($2 \times [P \times R] / [P + R]$)
 * **Jaccard Index (IoU):** **93.52%** ($TP / [TP + FP + FN]$)
-* **Overall Accuracy:** **97.79%** across the $1,000,000$ pixel / $10,000\text{ km}^2$ surveyed AOI
-* **Confusion Matrix:** True Positive: $3,192.88\text{ km}^2$ ($319,288$ pixels), False Positive: $50.87\text{ km}^2$ ($5,087$ pixels), False Negative: $170.46\text{ km}^2$ ($17,046$ pixels), True Negative: $6,585.79\text{ km}^2$ ($658,579$ pixels)
+* **Overall Accuracy:** **97.79%** across the $1,000,000$ simulation cells
+* **Confusion Matrix Areas:** True Positive: $1,410.02\text{ km}^2$ ($319,288$ cells), False Positive: $22.46\text{ km}^2$ ($5,087$ cells), False Negative: $75.28\text{ km}^2$ ($17,046$ cells), True Negative: $2,908.38\text{ km}^2$ ($658,579$ cells)
 
 ### 2.5 Data Fidelity & Operational Architecture
 * **NASA ASF DAAC REST API:** 100% Live operational queries (`https://api.daac.asf.alaska.edu/services/search/param`) returning real Sentinel-1 & NISAR granules, polarizations, timestamps, and Well-Known Text (WKT) swath polygons.
-* **Dual-Layer Processing Architecture:** Raw 8GB complex SAR SLC scenes require heavy cloud computing clusters and 30-45 minutes per pass. SAR Sentinel pairs an **offline rigorous calibration pipeline** (`scripts/empirical_validation.py`) with an **online sub-second 3D operational engine** ($\Delta\sigma^0 < -6.5\text{ dB}$ Otsu thresholding), delivering emergency intelligence to first responders in under 300ms without sacrificing scientific validity.
+* **Dual-Layer Architecture:** SAR Sentinel pairs an **offline algorithmic calibration suite** (`scripts/empirical_validation.py`) with an **online sub-second 3D operational engine** ($\Delta\sigma^0 < -6.5\text{ dB}$ Otsu thresholding), delivering emergency intelligence to first responders in under 300ms. Raw Level-1 SAR GeoTIFF ingestion is documented as the next production roadmap milestone.
 
 ---
 
