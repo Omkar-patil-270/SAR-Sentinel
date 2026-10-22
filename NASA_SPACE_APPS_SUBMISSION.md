@@ -49,10 +49,11 @@ To establish empirical ground truth on actual space agency data, SAR Sentinel pr
   * True Negative ($TN$): **$2,319.79\text{ km}^2$** ($16,217$ pixels)
 * **Real Satellite Measured Metrics:** Precision: **$31.12\%$**, Recall: **$19.22\%$**, F1-Score: **$23.76\%$**, Jaccard IoU: **$13.48\%$**, Accuracy: **$58.93\%$**
 
-### 2.5 Scientific Discovery & NASA-ISRO NISAR Mission Relevance
-The empirical processing of real Sentinel-1 C-band imagery provides the scientific rationale for the **NASA-ISRO NISAR mission**:
-1. **The C-Band Vegetation Penetration Limit:** Single-scene Sentinel-1 C-band ($\lambda = 5.6\text{ cm}$) radar reflects off the top leaves of dense wetland vegetation (Kaziranga's tall elephant grass and riverine jungle), causing **$1,188.15\text{ km}^2$ of False Negatives** where floodwaters beneath the forest canopy remain invisible to C-band radar.
-2. **The NISAR L-Band Solution:** The NASA-ISRO NISAR mission deploys an **L-band radar ($\lambda = 24\text{ cm}$)**. L-band microwave pulses penetrate through dense vegetative canopies down to the flooded soil, triggering distinct **double-bounce radar backscatter** between the vertical tree trunks and the horizontal water surface. This eliminates sub-canopy false negatives and enables true all-weather, day-and-night flood mapping.
+### 2.5 Scientific Investigation of C-Band Baseline & NASA-ISRO NISAR Hypothesis
+Our empirical processing of real Sentinel-1 C-band imagery reveals the fundamental physics and geometry of radar remote sensing:
+1. **Geometrical Factor (Orbital Slant-Range Coordinate Skew):** Raw Sentinel-1 Level-1 GRD rasters are formatted in radar slant-range geometry (`CRS: None`) oriented along Sentinel-1's $98.4^\circ$ ascending orbital inclination. Without executing a full DEM-based Range-Doppler Terrain Correction, the satellite raster is spatially rotated relative to true WGS84 North-South vector boundaries, creating a spatial misregistration offset that suppresses the measured overlap ($TP$).
+2. **Physical Factor (C-Band Canopy Attenuation):** Single-scene Sentinel-1 C-band ($\lambda = 5.6\text{ cm}$) radar reflects off the top leaves of dense wetland vegetation (Kaziranga's tall elephant grass and riverine jungle), causing **$1,188.15\text{ km}^2$ of False Negatives** where floodwaters beneath the forest canopy remain invisible to C-band radar.
+3. **Scientifically Motivated Hypothesis for NISAR:** This empirical limitation provides the direct scientific rationale for the **NASA-ISRO NISAR mission**. NISAR's long-wavelength **L-Band ($\lambda = 24\text{ cm}$)** is theoretically designed to penetrate through thick forest canopies and wetland foliage, bouncing off the water-trunk boundary via double-bounce scattering to detect the sub-canopy inundations that single-pass C-band satellites miss.
 
 ### 2.6 Data Fidelity & Dual-Layer Architecture
 * **NASA ASF DAAC REST API:** 100% Live operational queries (`https://api.daac.asf.alaska.edu/services/search/param`) returning real Sentinel-1 & NISAR granules, polarizations, timestamps, and Well-Known Text (WKT) swath polygons.

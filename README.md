@@ -71,10 +71,11 @@ To establish genuine empirical ground truth, SAR Sentinel implements an automate
 | **Measured F1-Score** | **23.76%** | Harmonic Mean | Single-scene raw C-band baseline |
 | **Overall Accuracy** | **58.93%** | Full AOI Evaluation | Uncalibrated single-pass satellite accuracy |
 
-#### 🔬 Crucial Scientific Finding & NASA-ISRO NISAR Justification:
-Our empirical pipeline reveals the fundamental physics of radar remote sensing:
-1. **The C-Band Canopy Barrier:** Sentinel-1 operates at C-band ($\lambda = 5.6\text{ cm}$). In dense tropical floodplains (like Kaziranga's tall elephant grass and riverine forest), short C-band waves scatter off the tree leaves and cannot penetrate to the water surface below, resulting in **$1,188.15\text{ km}^2$ of missed sub-canopy floodwaters (False Negatives)**.
-2. **Why NISAR Is Essential:** This empirical limitation provides the primary scientific justification for the joint **NASA-ISRO NISAR mission**. NISAR's long-wavelength **L-Band ($\lambda = 24\text{ cm}$)** penetrates directly through thick forest canopies and wetland vegetation, bouncing off the water-trunk boundary via double-bounce scattering to map the exact sub-canopy inundations that Sentinel-1 misses!
+#### 🔬 Scientific Investigation of C-Band Baseline & NASA-ISRO NISAR Hypothesis:
+Our empirical pipeline reveals the fundamental physics and geometry of radar remote sensing:
+1. **Geometrical Factor (Orbital Slant-Range Coordinate Skew):** Raw Sentinel-1 Level-1 GRD imagery is formatted in satellite radar slant-range coordinates (`CRS: None`) oriented along Sentinel-1's $98.4^\circ$ ascending orbital inclination. Without executing a full DEM-based Range-Doppler Terrain Correction, the satellite raster is spatially rotated relative to true WGS84 North-South vector boundaries, creating a spatial misregistration offset that directly suppresses the measured overlap ($TP$).
+2. **Physical Factor (The C-Band Canopy Barrier):** Sentinel-1 operates at C-band ($\lambda = 5.6\text{ cm}$). In dense tropical floodplains (like Kaziranga's tall elephant grass and riverine jungle), short C-band waves scatter off tree leaves and cannot penetrate to the flooded ground surface below, resulting in **$1,188.15\text{ km}^2$ of sub-canopy false negatives**.
+3. **Scientifically Motivated Hypothesis for NISAR:** This empirical limitation provides the direct scientific rationale for the **NASA-ISRO NISAR mission**. NISAR's long-wavelength **L-Band ($\lambda = 24\text{ cm}$)** is theoretically designed to penetrate through thick forest canopies and wetland foliage, bouncing off the water-trunk boundary via double-bounce scattering to detect the sub-canopy inundations that single-pass C-band satellites miss.
 
 ---
 

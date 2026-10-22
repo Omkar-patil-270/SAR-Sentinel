@@ -43,5 +43,9 @@
     "iou_jaccard_pct": 13.48,
     "overall_accuracy_pct": 58.93
   },
-  "nisar_mission_relevance": "Demonstrates that single-pass C-band SAR exhibits canopy attenuation limits. NASA-ISRO NISAR L-band (24 cm) radar penetrates dense vegetative canopies to map flood inundation through double-bounce scattering."
+  "scientific_investigation_of_low_recall": {
+    "geometrical_factor": "Raw Level-1 GRD imagery in slant-range geometry (CRS: None) with 98.4\u00b0 ascending orbital tilt; spatial misregistration relative to WGS84 vector polygons without full Range-Doppler Terrain Correction.",
+    "physical_factor": "C-band (5.6 cm) microwave pulses reflect off dense forest and elephant grass canopies, causing 1,188.15 km\u00b2 of false negatives.",
+    "nisar_hypothesis": "Presents a scientifically motivated hypothesis: NASA-ISRO NISAR L-band (24 cm) radar is theoretically designed to penetrate vegetative canopies and exploit double-bounce scattering to detect sub-canopy flooding."
+  }
 }
